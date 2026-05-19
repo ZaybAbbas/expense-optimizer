@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Optimizer & Savings Finder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        .fade-in-up { animation: fadeInUp 0.5s ease-out forwards; opacity: 0; transform: translateY(10px); }
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+        
+        .pop-in { animation: popIn 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
+        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen bg-gray-100 p-4 md:p-8 relative overflow-hidden">
+
+    <!-- SECURITY PADLOCK OVERLAY -->
+    <div id="pin-overlay" class="absolute inset-0 bg-indigo-900/95 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Client Access</h2>
+            <p class="text-gray-500 text-sm mb-6">Please enter this month's access PIN to use the Opportunity Calculator.</p>
+            
+            <input type="password" id="pin-input" class="w-full text-center text-3xl tracking-[0.5em] font-bold bg-gray-50 border border-gray-300 rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="••••" maxlength="4">
+            
+            <p id="pin-error" class="text-red-500 text-sm font-bold hidden mb-4">Incorrect PIN. Please try again.</p>
+            
+            <button onclick="checkPin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition-transform transform active:scale-95 text-lg">
+                Unlock <i class="fas fa-unlock ml-2"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div id="app-wrapper" class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden flex flex-col relative h-[850px] max-h-[90vh]">
+        
+        <div class="bg-indigo-600 text-white p-6 text-center shadow-md z-10">
+            <h1 class="text-2xl font-bold mb-1">The Opportunity Calculator</h1>
+            <p class="text-sm text-indigo-100">See what your daily habits are really costing you.</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 pb-24" id="main-content">
+            
+            <p class="text-gray-800 font-bold text-sm mb-6 text-center">Enter your estimated monthly spend in £. Leave blank if not applicable. Think hard. A rough idea is fine</p>
+
+            <form id="expense-form" class="space-y-4">
+                
+                <div class="flex items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-hamburger"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700">Takeaways & Delivery</label>
+                        <p class="text-xs text-gray-400">Deliveroo, JustEat, UberEats</p>
+                    </div>
+                    <div class="relative w-24">
+                        <span class="absolute left-3 top-2 text-gray-500">£</span>
+                        <input type="number" id="takeaways" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700">Meal-Deals / Lunches</label>
+                        <p class="text-xs text-gray-400">Supermarket lunches, Pret, Greggs</p>
+                    </div>
+                    <div class="relative w-24">
+                        <span class="absolute left-3 top-2 text-gray-500">£</span>
+                        <input type="number" id="lunches" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-coffee"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700">Coffees & Cafe Drinks</label>
+                        <p class="text-xs text-gray-400">Costa, Starbucks, Nero</p>
+                    </div>
+                    <div class="relative w-24">
+                        <span class="absolute left-3 top-2 text-gray-500">£</span>
+                        <input type="number" id="coffees" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700">Fad Supplements</label>
+                        <p class="text-xs text-gray-400">Powders, pre-workouts, BCAAs</p>
+                    </div>
+                    <div class="relative w-24">
+                        <span class="absolute left-3 top-2 text-gray-500">£</span>
+                        <input type="number" id="supps" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                    <div class="w-10 h-10 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                        <i class="fas fa-cookie-bite"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-semibold text-gray-700">Junk Food & Fizzy Drinks</label>
+                        <p class="text-xs text-gray-400">Crisps, chocolate, Red Bull, Coke</p>
+                    </div>
+                    <div class="relative w-24">
+                        <span class="absolute left-3 top-2 text-gray-500">£</span>
+                        <input type="number" id="junk" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="absolute bottom-0 w-full bg-white p-4 border-t border-gray-100 z-10" id="button-container">
+            <button onclick="startCalculation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform transform active:scale-95 text-lg flex justify-center items-center">
+                Reveal My Hidden Cash <i class="fas fa-magic ml-2"></i>
+            </button>
+        </div>
+
+        <!-- LOADING OVERLAY -->
+        <div id="loading-overlay" class="absolute inset-0 bg-indigo-600 z-50 flex flex-col items-center justify-center hidden transition-opacity duration-300">
+            <i class="fas fa-circle-notch fa-spin text-5xl text-white mb-6"></i>
+            <h2 id="loading-text" class="text-xl font-bold text-white mb-2">Analyzing habits...</h2>
+            <p class="text-indigo-200 text-sm">Cross-referencing supermarket data</p>
+        </div>
+
+        <!-- RESULTS OVERLAY -->
+        <div id="results-view" class="absolute inset-0 bg-gray-50 z-20 flex flex-col hidden transform translate-x-full transition-transform duration-300">
+            
+            <div class="bg-indigo-600 text-white p-6 pb-8 text-center rounded-b-3xl shadow-md relative">
+                <button onclick="closeResults()" class="absolute top-4 left-4 text-white hover:text-indigo-200">
+                    <i class="fas fa-chevron-left text-xl"></i>
+                </button>
+                <h2 class="text-lg font-medium opacity-90 mt-2">You could save around</h2>
+                <div class="text-5xl font-black tracking-tight mt-2 mb-2" id="total-saved">£0</div>
+                <p class="text-indigo-100 text-sm font-medium">every single month.</p>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-6 -mt-4 bg-gray-50">
+                <h3 class="text-gray-800 font-bold mb-1 text-xl">Your New Purchasing Power</h3>
+                <p class="text-gray-500 text-sm mb-4">If you optimize your bills today, you could reinvest that cash into <span class="font-bold text-indigo-600">ALL</span> of these things every month:</p>
+                <div id="purchasing-power-list" class="space-y-3 mb-8"></div>
+                <h3 class="text-gray-800 font-bold mb-4 text-lg border-t pt-6">How to unlock this £££</h3>
+                <div id="action-cards" class="space-y-4 pb-12"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // SECURITY PIN SETTING
+        // Change this number whenever you want to lock out old clients!
+        const CURRENT_MONTH_PIN = "1234"; 
+        // ==========================================
+
+        function checkPin() {
+            const enteredPin = document.getElementById('pin-input').value;
+            if (enteredPin === CURRENT_MONTH_PIN) {
+                // Hide the padlock screen
+                const overlay = document.getElementById('pin-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 500);
+            } else {
+                // Show error message
+                document.getElementById('pin-error').classList.remove('hidden');
+                document.getElementById('pin-input').value = ''; // clear the input
+            }
+        }
+
+        const BENCHMARKS = {
+            takeaways_pct: 0.75, lunches_pct: 0.80, coffees_pct: 0.80, supps_pct: 1.00, junk_pct: 0.80
+        };
+
+        // ZA TRAINING — OPPORTUNITY CALCULATOR ITEM DATABASE (Massive 400 Item List)
+        const REWARDS = [
+            // ===== POULTRY & MEAT (16 items) =====
+            { name: "Chicken Breast Fillets (1kg)", cost: 5.50, icon: "fa-drumstick-bite", color: "amber", desc: "The ultimate lean protein staple — batch cook Sunday and you're sorted for the week.", isConsumable: true },
+            { name: "Chicken Breast Fillets (500g)", cost: 3.00, icon: "fa-drumstick-bite", color: "amber", desc: "Lean, versatile protein that works in every meal from salads to curries.", isConsumable: true },
+            { name: "Chicken Thigh Fillets (1kg)", cost: 4.50, icon: "fa-drumstick-bite", color: "orange", desc: "More flavourful than breast with nearly the same protein — ideal for batch cooking.", isConsumable: true },
+            { name: "Chicken Drumsticks (1kg)", cost: 3.00, icon: "fa-drumstick-bite", color: "orange", desc: "Budget protein that oven cooks in bulk and takes any seasoning well.", isConsumable: true },
+            { name: "Turkey Breast Mince (500g)", cost: 3.50, icon: "fa-drumstick-bite", color: "amber", desc: "One of the leanest mince options available — works perfectly in a high-protein bolognese.", isConsumable: true },
+            { name: "Turkey Breast Slices (500g)", cost: 4.00, icon: "fa-drumstick-bite", color: "amber", desc: "Lean, ready-to-eat protein ideal for quick lunches without any cooking.", isConsumable: true },
+            { name: "Lean Beef Mince 5% Fat (500g)", cost: 4.50, icon: "fa-drumstick-bite", color: "red", desc: "High-protein red meat with minimal fat — the base of a hundred easy meals.", isConsumable: true },
+            { name: "Lean Beef Mince 5% Fat (750g)", cost: 6.00, icon: "fa-drumstick-bite", color: "red", desc: "Bulk protein for batch cooking — cook once and freeze in portions.", isConsumable: true },
+            { name: "Sirloin Steak (300g)", cost: 6.00, icon: "fa-drumstick-bite", color: "red", desc: "A quality red meat hit loaded with protein, iron, and zinc in one satisfying meal.", isConsumable: true },
+            { name: "Lamb Mince (500g)", cost: 4.50, icon: "fa-drumstick-bite", color: "red", desc: "A higher-fat protein for cultural cooking that still delivers serious nutrition.", isConsumable: true },
+            { name: "Frozen Chicken Breast (1kg)", cost: 5.00, icon: "fa-drumstick-bite", color: "amber", desc: "Just as nutritious as fresh — keeps for months with zero waste.", isConsumable: true },
+            { name: "Diced Chicken Breast (500g)", cost: 3.50, icon: "fa-drumstick-bite", color: "amber", desc: "Pre-diced for convenience — throw it straight into a stir fry or curry.", isConsumable: true },
+            { name: "Beef Mince 5% Fat (1kg)", cost: 8.00, icon: "fa-drumstick-bite", color: "red", desc: "Economy bulk protein — cook a big batch and freeze portions for the week.", isConsumable: true },
+            { name: "Diced Beef (500g)", cost: 5.00, icon: "fa-drumstick-bite", color: "red", desc: "Slow cook it and it becomes one of the most filling, high-protein meals you can eat.", isConsumable: true },
+            { name: "Smoked Chicken Breast Slices (200g)", cost: 3.00, icon: "fa-drumstick-bite", color: "amber", desc: "Ready-to-eat smoked protein that adds flavour to salads and wraps instantly.", isConsumable: true },
+            { name: "Beef Stir Fry Strips (300g)", cost: 4.50, icon: "fa-drumstick-bite", color: "red", desc: "Pre-cut lean beef that cooks in three minutes — a high-protein dinner with no effort.", isConsumable: true },
+
+            // ===== EGGS (5 items) =====
+            { name: "Free Range Eggs (12 pack)", cost: 3.50, icon: "fa-egg", color: "yellow", desc: "A complete protein source with healthy fats — one of the best value foods you can buy.", isConsumable: true },
+            { name: "Free Range Eggs (6 pack)", cost: 2.00, icon: "fa-egg", color: "yellow", desc: "Versatile, cheap protein that works at any meal of the day.", isConsumable: true },
+            { name: "Free Range Medium Eggs (15 pack)", cost: 4.00, icon: "fa-egg", color: "yellow", desc: "Stock up — eggs are one of the most nutrient-dense foods per penny on the shelf.", isConsumable: true },
+            { name: "Egg White Carton (500ml)", cost: 2.50, icon: "fa-egg", color: "gray", desc: "Pure protein with zero yolk — pour and cook in seconds, no shelling required.", isConsumable: true },
+            { name: "Free Range Large Eggs (6 pack)", cost: 2.20, icon: "fa-egg", color: "yellow", desc: "More protein per egg than medium — a small upgrade worth making.", isConsumable: true },
+
+            // ===== FISH & SEAFOOD (36 items) =====
+            { name: "Tuna Chunks in Spring Water (4 tins)", cost: 3.50, icon: "fa-fish", color: "blue", desc: "Lean, high protein, and ready in seconds — the laziest meal prep on earth.", isConsumable: true },
+            { name: "Tuna Chunks in Spring Water (1 tin, 145g)", cost: 1.10, icon: "fa-fish", color: "blue", desc: "A single-serve protein hit that costs less than a coffee.", isConsumable: true },
+            { name: "Tuna Steak in Spring Water (185g tin)", cost: 1.50, icon: "fa-fish", color: "blue", desc: "Chunkier tuna with more protein per tin — a step up from standard flakes.", isConsumable: true },
+            { name: "Tinned Tuna in Olive Oil (4 pack)", cost: 3.50, icon: "fa-fish", color: "blue", desc: "Healthy fat added to your protein — the tastier version of tinned tuna.", isConsumable: true },
+            { name: "Frozen Cod Fillets (500g)", cost: 4.00, icon: "fa-fish", color: "teal", desc: "Mild, lean white fish that cooks in minutes and delivers solid protein.", isConsumable: true },
+            { name: "Frozen Cod Fillets (1kg)", cost: 7.00, icon: "fa-fish", color: "teal", desc: "Bulk lean protein — use it across the whole week from the freezer.", isConsumable: true },
+            { name: "Fresh Cod Loin (400g)", cost: 5.00, icon: "fa-fish", color: "teal", desc: "Thick, meaty white fish loin — high protein and virtually no fat.", isConsumable: true },
+            { name: "Frozen Haddock Fillets (500g)", cost: 4.00, icon: "fa-fish", color: "cyan", desc: "A great low-fat protein source that works with any seasoning.", isConsumable: true },
+            { name: "Frozen Haddock Fillets (1kg)", cost: 7.00, icon: "fa-fish", color: "cyan", desc: "One of the best-value white fish you can bulk buy from the freezer aisle.", isConsumable: true },
+            { name: "Smoked Haddock Fillets (2 pack)", cost: 4.00, icon: "fa-fish", color: "cyan", desc: "Pre-seasoned with a subtle smoke — poach in milk for a quick high-protein meal.", isConsumable: true },
+            { name: "Smoked Salmon Slices (100g)", cost: 3.00, icon: "fa-fish", color: "orange", desc: "Omega-3 rich and ready to eat — no cooking required, no excuses.", isConsumable: true },
+            { name: "Smoked Salmon Slices (200g)", cost: 5.50, icon: "fa-fish", color: "orange", desc: "Double up on omega-3 rich protein — works on eggs, in salads, or straight from the packet.", isConsumable: true },
+            { name: "Fresh Salmon Fillets (2 pack)", cost: 5.00, icon: "fa-fish", color: "pink", desc: "Fatty fish loaded with omega-3 — a twice-a-week staple for brain and body.", isConsumable: true },
+            { name: "Fresh Salmon Fillets (4 pack)", cost: 9.00, icon: "fa-fish", color: "pink", desc: "Stock up on omega-3 rich salmon and have protein sorted for multiple meals.", isConsumable: true },
+            { name: "Frozen Salmon Fillets (500g)", cost: 6.00, icon: "fa-fish", color: "pink", desc: "Frozen salmon retains all the omega-3 benefits at a lower price than fresh.", isConsumable: true },
+            { name: "Tinned Salmon (213g)", cost: 2.50, icon: "fa-fish", color: "pink", desc: "Canned salmon is just as nutritious as fresh and lasts months in the cupboard.", isConsumable: true },
+            { name: "Tinned Salmon (2 pack, 213g each)", cost: 4.50, icon: "fa-fish", color: "pink", desc: "Stock your cupboard with omega-3 protein that needs zero prep.", isConsumable: true },
+            { name: "Frozen Pollock Fillets (500g)", cost: 3.50, icon: "fa-fish", color: "teal", desc: "The most underrated white fish — lean protein at one of the lowest prices in the aisle.", isConsumable: true },
+            { name: "Frozen Sea Bass Fillets (300g)", cost: 5.00, icon: "fa-fish", color: "blue", desc: "A premium-tasting fish that cooks in minutes and packs in lean protein.", isConsumable: true },
+            { name: "Fresh Sea Bass Fillets (2 pack)", cost: 5.50, icon: "fa-fish", color: "blue", desc: "Lean fish with a clean flavour — quick to cook and high in protein.", isConsumable: true },
+            { name: "Frozen Tilapia Fillets (500g)", cost: 4.00, icon: "fa-fish", color: "cyan", desc: "Mild, affordable white fish with solid protein content — takes any marinade well.", isConsumable: true },
+            { name: "Fresh Trout Fillets (2 pack)", cost: 5.00, icon: "fa-fish", color: "pink", desc: "A less expensive alternative to salmon with similar omega-3 benefits.", isConsumable: true },
+            { name: "Smoked Trout Fillets (100g)", cost: 3.00, icon: "fa-fish", color: "pink", desc: "Ready-to-eat omega-3 protein with smoky depth — ideal for salads or crackers.", isConsumable: true },
+            { name: "Frozen Basa Fillets (500g)", cost: 3.50, icon: "fa-fish", color: "teal", desc: "One of the cheapest white fish fillets available — mild and easy to cook.", isConsumable: true },
+            { name: "Frozen Prawns (400g)", cost: 5.00, icon: "fa-fish", color: "orange", desc: "High protein, almost zero fat, and cook from frozen in three minutes flat.", isConsumable: true },
+            { name: "Frozen King Prawns (300g)", cost: 5.50, icon: "fa-fish", color: "orange", desc: "Bigger prawns, bigger protein hit — add to stir fry or salad in minutes.", isConsumable: true },
+            { name: "Frozen King Prawn Stir Fry (300g)", cost: 5.00, icon: "fa-fish", color: "orange", desc: "Ready-seasoned prawns for a quick high-protein meal in under ten minutes.", isConsumable: true },
+            { name: "Tinned Crab Meat (170g)", cost: 2.50, icon: "fa-fish", color: "red", desc: "Overlooked by most — tinned crab is high protein and surprisingly versatile.", isConsumable: true },
+            { name: "Frozen Tuna Steaks (2 pack)", cost: 5.50, icon: "fa-fish", color: "blue", desc: "A proper fish steak — high protein, omega-3 rich, and more satisfying than tinned.", isConsumable: true },
+            { name: "Fresh Tuna Steaks (2 pack)", cost: 6.00, icon: "fa-fish", color: "blue", desc: "A high-protein fish steak that eats like meat — sear it and done in minutes.", isConsumable: true },
+            { name: "Frozen Seabream Fillets (300g)", cost: 5.00, icon: "fa-fish", color: "blue", desc: "Delicate white fish with good protein content — ready in minutes from frozen.", isConsumable: true },
+            { name: "Frozen Monkfish (300g)", cost: 6.00, icon: "fa-fish", color: "teal", desc: "Dense, meaty fish texture — extremely high in protein and low in fat.", isConsumable: true },
+            { name: "Frozen Mixed Seafood (400g)", cost: 5.00, icon: "fa-fish", color: "teal", desc: "Prawns, mussels, squid in one bag — a high-protein variety meal in fifteen minutes.", isConsumable: true },
+            { name: "Frozen Calamari Rings (300g)", cost: 3.50, icon: "fa-fish", color: "gray", desc: "High protein, low fat seafood that cooks quickly and makes meals more interesting.", isConsumable: true },
+            { name: "Anchovies in Olive Oil (50g)", cost: 1.50, icon: "fa-fish", color: "amber", desc: "A small but potent omega-3 and protein source — use to flavour sauces and salads.", isConsumable: true },
+            { name: "Kipper Fillets (2 pack)", cost: 2.00, icon: "fa-fish", color: "amber", desc: "A traditional smoked fish high in omega-3 — one of the most nutritious breakfast options.", isConsumable: true },
+
+            // ===== DAIRY & ALTERNATIVES (24 items) =====
+            { name: "Greek Yoghurt Full Fat (500g)", cost: 2.00, icon: "fa-jar", color: "gray", desc: "High protein, gut-friendly, and filling — use it instead of cream or mayo.", isConsumable: true },
+            { name: "Greek Yoghurt 0% Fat (500g)", cost: 2.00, icon: "fa-jar", color: "gray", desc: "All the protein of full-fat with fewer calories — a smart daily staple.", isConsumable: true },
+            { name: "Greek Yoghurt (1kg)", cost: 3.50, icon: "fa-jar", color: "gray", desc: "Bulk up your protein intake with this versatile high-protein dairy staple.", isConsumable: true },
+            { name: "Mozzarella (125g)", cost: 1.20, icon: "fa-cheese", color: "gray", desc: "Lower in fat than most cheeses and pairs with almost any meal — a smarter cheese choice.", isConsumable: true },
+            { name: "Mozzarella (250g)", cost: 2.00, icon: "fa-cheese", color: "gray", desc: "A higher-quality cheese option that's lighter than most alternatives and more versatile.", isConsumable: true },
+            { name: "Cottage Cheese (300g)", cost: 1.50, icon: "fa-jar", color: "gray", desc: "Extremely high in casein protein — one of the best foods to eat before bed.", isConsumable: true },
+            { name: "Cottage Cheese (500g)", cost: 2.50, icon: "fa-jar", color: "gray", desc: "Slow-digesting casein protein in bulk — great as a snack or mixed into meals.", isConsumable: true },
+            { name: "Quark (500g)", cost: 1.80, icon: "fa-jar", color: "gray", desc: "Almost zero fat, high protein — the most underused dairy product in the UK.", isConsumable: true },
+            { name: "Skimmed Milk (2L)", cost: 1.30, icon: "fa-bottle-droplet", color: "blue", desc: "All the protein and calcium of full fat milk with far fewer calories.", isConsumable: true },
+            { name: "Semi-Skimmed Milk (2L)", cost: 1.30, icon: "fa-bottle-droplet", color: "blue", desc: "A moderate-fat dairy option that's affordable and universally useful.", isConsumable: true },
+            { name: "High Protein Milk (1L)", cost: 1.80, icon: "fa-bottle-droplet", color: "blue", desc: "More protein per glass than standard milk — a simple daily upgrade.", isConsumable: true },
+            { name: "Kefir Drink (500ml)", cost: 2.50, icon: "fa-bottle-droplet", color: "gray", desc: "Fermented dairy packed with probiotics — supports gut health and digestion.", isConsumable: true },
+            { name: "Kefir (750ml)", cost: 3.00, icon: "fa-bottle-droplet", color: "gray", desc: "More gut-friendly bacteria per serving than most probiotic supplements.", isConsumable: true },
+            { name: "Natural Yoghurt (500g)", cost: 1.50, icon: "fa-jar", color: "gray", desc: "Plain, unflavoured protein and probiotic source — add fruit yourself and skip the sugar.", isConsumable: true },
+            { name: "Skyr Plain (450g)", cost: 2.50, icon: "fa-jar", color: "gray", desc: "Icelandic-style strained dairy with exceptionally high protein per 100g.", isConsumable: true },
+            { name: "Ricotta (250g)", cost: 2.00, icon: "fa-jar", color: "gray", desc: "A lighter, protein-rich soft cheese that works in savoury and sweet meals.", isConsumable: true },
+            { name: "Feta Cheese (200g)", cost: 2.50, icon: "fa-cheese", color: "gray", desc: "Salty, crumbly protein and fat source — crumble sparingly over salads.", isConsumable: true },
+            { name: "Halloumi Light (225g)", cost: 2.50, icon: "fa-cheese", color: "amber", desc: "The grillable cheese — lower fat version with all the texture.", isConsumable: true },
+            { name: "Low Fat Creme Fraiche (300ml)", cost: 1.50, icon: "fa-jar", color: "gray", desc: "A lighter cream alternative that works in sauces without blowing the calorie budget.", isConsumable: true },
+            { name: "Soy Milk Unsweetened (1L)", cost: 1.20, icon: "fa-bottle-droplet", color: "amber", desc: "The only plant milk with protein comparable to dairy — avoid the sweetened version.", isConsumable: true },
+            { name: "Oat Milk Unsweetened (1L)", cost: 1.30, icon: "fa-bottle-droplet", color: "amber", desc: "A palatable dairy alternative — always choose unsweetened to avoid hidden sugar.", isConsumable: true },
+            { name: "Almond Milk Unsweetened (1L)", cost: 1.30, icon: "fa-bottle-droplet", color: "amber", desc: "Very low calorie dairy alternative — choose unsweetened to keep it clean.", isConsumable: true },
+            { name: "Soya Yoghurt Plain (400g)", cost: 1.50, icon: "fa-jar", color: "green", desc: "A dairy-free yoghurt with decent protein — choose plain to avoid added sugars.", isConsumable: true },
+            { name: "Low Fat Fromage Frais (500g)", cost: 1.80, icon: "fa-jar", color: "gray", desc: "Very low calorie protein source — works as a yoghurt alternative in meals.", isConsumable: true },
+
+            // ===== FRESH FRUIT (28 items) =====
+            { name: "Bananas (5 pack)", cost: 0.90, icon: "fa-seedling", color: "yellow", desc: "Fast carbs, potassium, and portable — the most practical fruit on the shelf.", isConsumable: true },
+            { name: "Pink Lady Apples (6 pack)", cost: 1.80, icon: "fa-apple-whole", color: "pink", desc: "High fibre, naturally sweet, and keeps hunger away between meals.", isConsumable: true },
+            { name: "Granny Smith Apples (6 pack)", cost: 1.60, icon: "fa-apple-whole", color: "green", desc: "Lower sugar than sweet varieties with plenty of fibre — a solid daily snack.", isConsumable: true },
+            { name: "Oranges (4 pack)", cost: 1.50, icon: "fa-lemon", color: "orange", desc: "Vitamin C and fibre in a natural package — far better than orange juice.", isConsumable: true },
+            { name: "Clementines (600g bag)", cost: 1.50, icon: "fa-lemon", color: "orange", desc: "Easy to peel, portable, naturally sweet — the snack that needs zero preparation.", isConsumable: true },
+            { name: "Pears (6 pack)", cost: 1.70, icon: "fa-apple-whole", color: "green", desc: "High fibre fruit that digests slowly — better for blood sugar than most sweet fruits.", isConsumable: true },
+            { name: "Red Grapes (500g)", cost: 2.00, icon: "fa-seedling", color: "purple", desc: "Naturally sweet snack with antioxidants — portion them to avoid mindless eating.", isConsumable: true },
+            { name: "Green Grapes (500g)", cost: 2.00, icon: "fa-seedling", color: "green", desc: "Refreshing, portable snack with natural sugars and hydration benefits.", isConsumable: true },
+            { name: "Strawberries (400g)", cost: 2.00, icon: "fa-seedling", color: "red", desc: "Low calorie, high volume — the snack that actually satisfies a sweet craving.", isConsumable: true },
+            { name: "Blueberries (150g)", cost: 2.00, icon: "fa-seedling", color: "indigo", desc: "One of the highest antioxidant fruits available — add to oats, yoghurt, or eat plain.", isConsumable: true },
+            { name: "Raspberries (150g)", cost: 2.00, icon: "fa-seedling", color: "pink", desc: "Very high in fibre for a berry — a great way to feel fuller on fewer calories.", isConsumable: true },
+            { name: "Blackberries (150g)", cost: 1.80, icon: "fa-seedling", color: "purple", desc: "High in vitamin C and antioxidants — one of the lowest sugar berry options.", isConsumable: true },
+            { name: "Kiwi Fruits (4 pack)", cost: 1.20, icon: "fa-seedling", color: "green", desc: "Loaded with vitamin C and digestive enzymes — eat the skin for extra fibre.", isConsumable: true },
+            { name: "Watermelon (whole)", cost: 3.50, icon: "fa-seedling", color: "green", desc: "95% water — a high volume, low calorie snack that helps with hydration.", isConsumable: true },
+            { name: "Cantaloupe Melon (half)", cost: 1.50, icon: "fa-seedling", color: "orange", desc: "Low calorie and filling — high in vitamins A and C for the price.", isConsumable: true },
+            { name: "Peaches (4 pack)", cost: 1.80, icon: "fa-seedling", color: "orange", desc: "Naturally sweet stone fruit with fibre and vitamins — great for curbing sweet cravings.", isConsumable: true },
+            { name: "Nectarines (4 pack)", cost: 1.80, icon: "fa-seedling", color: "red", desc: "Similar to peaches but slightly lower in sugar — a solid high-volume fruit choice.", isConsumable: true },
+            { name: "Plums (400g)", cost: 1.50, icon: "fa-seedling", color: "purple", desc: "High in antioxidants and fibre — one of the most underrated fruits in the aisle.", isConsumable: true },
+            { name: "Cherries (400g)", cost: 3.00, icon: "fa-seedling", color: "red", desc: "Contains natural melatonin to support sleep — a tasty antioxidant-rich treat.", isConsumable: true },
+            { name: "Mango (1 whole)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Rich in vitamin A and C — works well in protein smoothies or eaten plain.", isConsumable: true },
+            { name: "Pineapple (1 whole)", cost: 1.50, icon: "fa-seedling", color: "yellow", desc: "Contains bromelain which supports digestion — a sweet, high-volume fruit.", isConsumable: true },
+            { name: "Grapefruit (2 pack)", cost: 1.00, icon: "fa-lemon", color: "pink", desc: "Bitter, filling, and low in calories — one of the most appetite-suppressing fruits.", isConsumable: true },
+            { name: "Pomegranate (1 whole)", cost: 1.50, icon: "fa-seedling", color: "red", desc: "Antioxidant-rich seeds that add flavour and colour to salads and yoghurt.", isConsumable: true },
+            { name: "Lemons (4 pack)", cost: 0.90, icon: "fa-lemon", color: "yellow", desc: "Add to water, fish, or salads — a kitchen essential with zero calories.", isConsumable: true },
+            { name: "Limes (4 pack)", cost: 0.90, icon: "fa-lemon", color: "green", desc: "A flavour boost for meals, drinks, and marinades with zero calorie cost.", isConsumable: true },
+            { name: "Satsumas (600g bag)", cost: 1.50, icon: "fa-lemon", color: "orange", desc: "Easy-peel portable citrus — a convenient vitamin C hit between meals.", isConsumable: true },
+            { name: "Medjool Dates (200g)", cost: 3.50, icon: "fa-seedling", color: "amber", desc: "Natural energy-dense fruit — use as a pre-workout snack instead of processed bars.", isConsumable: true },
+            { name: "Dried Apricots (200g)", cost: 2.00, icon: "fa-seedling", color: "orange", desc: "Iron-rich dried fruit with fibre and natural sweetness — a convenient portable snack.", isConsumable: true },
+
+            // ===== FROZEN FRUIT (10 items) =====
+            { name: "Frozen Mixed Berries (1kg)", cost: 3.00, icon: "fa-seedling", color: "purple", desc: "Antioxidant-rich and cheap — throw them in yoghurt or oats and you are done.", isConsumable: true },
+            { name: "Frozen Blueberries (400g)", cost: 2.50, icon: "fa-seedling", color: "indigo", desc: "One of the highest antioxidant fruits you can buy for under three pounds.", isConsumable: true },
+            { name: "Frozen Raspberries (400g)", cost: 2.00, icon: "fa-seedling", color: "pink", desc: "High in fibre and low in sugar — a smarter berry than most people realise.", isConsumable: true },
+            { name: "Frozen Strawberries (400g)", cost: 2.00, icon: "fa-seedling", color: "red", desc: "All the nutrition of fresh, frozen at peak ripeness for less money.", isConsumable: true },
+            { name: "Frozen Mango Chunks (400g)", cost: 2.50, icon: "fa-seedling", color: "amber", desc: "Ready-to-use mango with no prep — blend into smoothies or add to yoghurt.", isConsumable: true },
+            { name: "Frozen Pineapple Chunks (400g)", cost: 2.00, icon: "fa-seedling", color: "yellow", desc: "Convenient tropical fruit for smoothies — no sugar added, just frozen pineapple.", isConsumable: true },
+            { name: "Frozen Cherries (400g)", cost: 2.50, icon: "fa-seedling", color: "red", desc: "Natural source of melatonin and antioxidants — great in smoothies or overnight oats.", isConsumable: true },
+            { name: "Frozen Summer Fruits (500g)", cost: 2.50, icon: "fa-seedling", color: "purple", desc: "A mix of berries and stone fruits frozen together — variety without the prep.", isConsumable: true },
+            { name: "Frozen Blackcurrants (400g)", cost: 2.00, icon: "fa-seedling", color: "purple", desc: "Extremely high in vitamin C — one of the most underused frozen fruits available.", isConsumable: true },
+            { name: "Frozen Tropical Fruits (500g)", cost: 2.50, icon: "fa-seedling", color: "amber", desc: "Mango, papaya, and pineapple mixed — a ready-made smoothie base with no prep.", isConsumable: true },
+
+            // ===== FRESH VEGETABLES (36 items) =====
+            { name: "Broccoli (400g)", cost: 0.90, icon: "fa-seedling", color: "green", desc: "One of the most nutrient-dense vegetables for the price — a non-negotiable staple.", isConsumable: true },
+            { name: "Baby Spinach (200g)", cost: 1.30, icon: "fa-leaf", color: "green", desc: "Iron, magnesium, and barely any calories — a bag of this changes your nutrition instantly.", isConsumable: true },
+            { name: "Kale (200g)", cost: 1.00, icon: "fa-leaf", color: "green", desc: "Higher in calcium than milk per calorie — one of the most nutritionally dense leaves available.", isConsumable: true },
+            { name: "Red Bell Peppers (3 pack)", cost: 1.50, icon: "fa-seedling", color: "red", desc: "More vitamin C than an orange — low calorie and adds colour and crunch to any meal.", isConsumable: true },
+            { name: "Mixed Bell Peppers (3 pack)", cost: 1.80, icon: "fa-seedling", color: "orange", desc: "Colour, crunch, and vitamins in one pack — stir fry or eat raw as a snack.", isConsumable: true },
+            { name: "Carrots (1kg)", cost: 0.70, icon: "fa-carrot", color: "orange", desc: "Beta-carotene rich and extremely filling — one of the best value vegetables in the shop.", isConsumable: true },
+            { name: "Courgette (2 pack)", cost: 0.90, icon: "fa-seedling", color: "green", desc: "Low calorie, high volume veg that bulks up meals without adding much to intake.", isConsumable: true },
+            { name: "Cucumber (1 whole)", cost: 0.70, icon: "fa-seedling", color: "green", desc: "96% water and almost zero calories — the ultimate snack for volume eaters.", isConsumable: true },
+            { name: "Cherry Tomatoes (400g)", cost: 1.50, icon: "fa-seedling", color: "red", desc: "Lycopene, vitamins, and natural sweetness — eat them by the handful guilt-free.", isConsumable: true },
+            { name: "Beef Tomatoes (4 pack)", cost: 1.50, icon: "fa-seedling", color: "red", desc: "Large, filling tomatoes rich in lycopene — a versatile low-calorie meal base.", isConsumable: true },
+            { name: "Brown Onions (1kg)", cost: 0.90, icon: "fa-seedling", color: "amber", desc: "The foundation of almost every meal — adds flavour and prebiotics for almost nothing.", isConsumable: true },
+            { name: "Red Onions (500g)", cost: 0.80, icon: "fa-seedling", color: "purple", desc: "Higher in antioxidants than brown onions — adds colour, flavour, and health benefits.", isConsumable: true },
+            { name: "Garlic Bulbs (3 pack)", cost: 0.70, icon: "fa-seedling", color: "gray", desc: "Anti-inflammatory and makes everything taste better — use it daily.", isConsumable: true },
+            { name: "Mushrooms (400g)", cost: 1.30, icon: "fa-seedling", color: "amber", desc: "The only plant-based source of vitamin D — a high-volume, low-calorie food.", isConsumable: true },
+            { name: "Celery (1 head)", cost: 0.80, icon: "fa-seedling", color: "green", desc: "Virtually zero calories — eat with peanut butter for a protein and fat snack combo.", isConsumable: true },
+            { name: "Romaine Lettuce (1 whole)", cost: 0.90, icon: "fa-leaf", color: "green", desc: "More nutritious than iceberg with a satisfying crunch — the better salad base.", isConsumable: true },
+            { name: "Iceberg Lettuce (1 whole)", cost: 0.70, icon: "fa-leaf", color: "green", desc: "High water content, almost no calories — a solid base for volume-heavy salads.", isConsumable: true },
+            { name: "Cauliflower (1 head)", cost: 1.20, icon: "fa-seedling", color: "gray", desc: "Versatile low-carb vegetable — roast it, rice it, or mash it as a potato alternative.", isConsumable: true },
+            { name: "Green Beans (220g)", cost: 1.00, icon: "fa-seedling", color: "green", desc: "Low calorie, high fibre side that cooks in minutes and pairs with any protein.", isConsumable: true },
+            { name: "Sugar Snap Peas (200g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Crunchy, high fibre snack you can eat raw — a better alternative to crisps.", isConsumable: true },
+            { name: "Butternut Squash (1 whole)", cost: 1.50, icon: "fa-seedling", color: "orange", desc: "Naturally sweet complex carb with plenty of beta-carotene — roasts beautifully.", isConsumable: true },
+            { name: "Sweet Potatoes (1kg)", cost: 1.50, icon: "fa-seedling", color: "orange", desc: "Slow-releasing carbs with more fibre and vitamins than regular potatoes.", isConsumable: true },
+            { name: "White Potatoes (2.5kg)", cost: 2.00, icon: "fa-seedling", color: "amber", desc: "Whole potatoes are highly satiating — it is what you add to them that causes problems.", isConsumable: true },
+            { name: "Baby Potatoes (1kg)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Boil and cool them — resistant starch content rises significantly and feeds gut bacteria.", isConsumable: true },
+            { name: "Spring Onions (bunch)", cost: 0.60, icon: "fa-seedling", color: "green", desc: "Low calorie flavour boost for salads, stir fries, and rice dishes.", isConsumable: true },
+            { name: "Fresh Ginger Root", cost: 0.80, icon: "fa-seedling", color: "amber", desc: "Anti-inflammatory and adds serious flavour to meals for almost nothing.", isConsumable: true },
+            { name: "Tenderstem Broccoli (200g)", cost: 1.80, icon: "fa-seedling", color: "green", desc: "Sweeter than regular broccoli and you eat stem and all — high nutrient density.", isConsumable: true },
+            { name: "Aubergine (1 whole)", cost: 0.90, icon: "fa-seedling", color: "purple", desc: "High fibre, low calorie, absorbs flavour brilliantly — underused in health diets.", isConsumable: true },
+            { name: "Watercress (85g)", cost: 1.00, icon: "fa-leaf", color: "green", desc: "Calorie for calorie one of the most nutrient-dense foods on the planet.", isConsumable: true },
+            { name: "Rocket (100g)", cost: 1.20, icon: "fa-leaf", color: "green", desc: "Peppery, nutritious leaves that turn a boring salad into something worth eating.", isConsumable: true },
+            { name: "Beetroot (bunch of 4)", cost: 1.20, icon: "fa-seedling", color: "red", desc: "Natural nitrates that support blood flow and exercise performance.", isConsumable: true },
+            { name: "Mange Tout (150g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Eat the whole pod — a crunchy, high fibre snack or stir fry addition.", isConsumable: true },
+            { name: "Brussels Sprouts (400g)", cost: 1.20, icon: "fa-seedling", color: "green", desc: "Vitamin K and C in every sprout — one of the most nutritious vegetables in the aisle.", isConsumable: true },
+            { name: "Pak Choi (2 pack)", cost: 1.20, icon: "fa-leaf", color: "green", desc: "Low calorie leafy brassica that wilts into stir fries in seconds.", isConsumable: true },
+            { name: "Leeks (2 pack)", cost: 1.00, icon: "fa-seedling", color: "green", desc: "Prebiotic fibre that feeds good gut bacteria — underused and underrated.", isConsumable: true },
+            { name: "Baby Gem Lettuce (2 pack)", cost: 1.00, icon: "fa-leaf", color: "green", desc: "Crunchy, versatile leaves that work as wraps or a salad base.", isConsumable: true },
+
+            // ===== FROZEN VEGETABLES (14 items) =====
+            { name: "Frozen Peas (1kg)", cost: 1.20, icon: "fa-seedling", color: "green", desc: "Cheap, convenient protein and fibre hit — add to any meal straight from the bag.", isConsumable: true },
+            { name: "Frozen Broccoli Florets (1kg)", cost: 1.29, icon: "fa-seedling", color: "green", desc: "Just as nutritious as fresh, cheaper, and zero waste — no excuses.", isConsumable: true },
+            { name: "Frozen Spinach (1kg)", cost: 1.50, icon: "fa-leaf", color: "green", desc: "More concentrated iron than fresh — lasts weeks and costs almost nothing.", isConsumable: true },
+            { name: "Frozen Cauliflower Florets (1kg)", cost: 1.29, icon: "fa-seedling", color: "gray", desc: "Ready-to-steam low-carb vegetables that take five minutes to cook.", isConsumable: true },
+            { name: "Frozen Mixed Vegetables (1kg)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Peas, carrots, and corn ready to go — the laziest way to hit your veg intake.", isConsumable: true },
+            { name: "Frozen Edamame Beans (500g)", cost: 2.00, icon: "fa-seedling", color: "green", desc: "A complete plant protein — high in fibre, protein, and easy to snack on.", isConsumable: true },
+            { name: "Frozen Sweetcorn (1kg)", cost: 1.20, icon: "fa-seedling", color: "yellow", desc: "A convenient carb and fibre source — add to salads, rice dishes, and soups.", isConsumable: true },
+            { name: "Frozen Green Beans (1kg)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Ready to steam or stir fry — a hassle-free way to add veg to every meal.", isConsumable: true },
+            { name: "Frozen Sliced Peppers (500g)", cost: 1.50, icon: "fa-seedling", color: "red", desc: "Ready-cut peppers for stir fries and sauces — all the nutrition, none of the prep.", isConsumable: true },
+            { name: "Frozen Butternut Squash (500g)", cost: 1.50, icon: "fa-seedling", color: "orange", desc: "Pre-cut squash that roasts from frozen in twenty minutes — a proper time saver.", isConsumable: true },
+            { name: "Frozen Petit Pois (900g)", cost: 1.30, icon: "fa-seedling", color: "green", desc: "Smaller, sweeter peas with more fibre — a slight upgrade on standard frozen peas.", isConsumable: true },
+            { name: "Frozen Broad Beans (907g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "High in plant protein and fibre — a filling, underrated freezer vegetable.", isConsumable: true },
+            { name: "Frozen Kale (500g)", cost: 1.50, icon: "fa-leaf", color: "green", desc: "Blanched and frozen at peak nutrition — add straight to smoothies or soups.", isConsumable: true },
+            { name: "Frozen Stir Fry Vegetables (500g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Ready-mixed veg for a complete side dish in under five minutes.", isConsumable: true },
+
+            // ===== CARBS - GRAINS & RICE (32 items) =====
+            { name: "Basmati Rice (2kg)", cost: 3.00, icon: "fa-bowl-rice", color: "amber", desc: "A lower GI rice that pairs with literally every meal — a staple for a reason.", isConsumable: true },
+            { name: "Basmati Rice (1kg)", cost: 1.80, icon: "fa-bowl-rice", color: "amber", desc: "The classic rice for South Asian cooking — pairs with any protein and vegetable.", isConsumable: true },
+            { name: "Brown Rice (1kg)", cost: 1.80, icon: "fa-bowl-rice", color: "amber", desc: "More fibre and nutrients than white rice — takes longer but worth it.", isConsumable: true },
+            { name: "Long Grain Rice (2kg)", cost: 2.50, icon: "fa-bowl-rice", color: "amber", desc: "Fluffy, versatile rice for everyday meals — a bulk carb source at low cost.", isConsumable: true },
+            { name: "Jasmine Rice (2kg)", cost: 3.00, icon: "fa-bowl-rice", color: "amber", desc: "Fragrant and satisfying — slightly stickier rice that works well with Asian dishes.", isConsumable: true },
+            { name: "Rolled Porridge Oats (1kg)", cost: 1.50, icon: "fa-wheat-awn", color: "amber", desc: "Slow-release carbs that keep hunger away all morning for almost no money.", isConsumable: true },
+            { name: "Rolled Porridge Oats (500g)", cost: 1.00, icon: "fa-wheat-awn", color: "amber", desc: "The cheapest, most effective breakfast carb on the shelf — no excuses.", isConsumable: true },
+            { name: "Jumbo Oats (1kg)", cost: 1.80, icon: "fa-wheat-awn", color: "amber", desc: "Larger oat flakes with more texture — slower to digest and more filling.", isConsumable: true },
+            { name: "Wholegrain Pasta (500g)", cost: 1.10, icon: "fa-wheat-awn", color: "amber", desc: "More fibre than white pasta with the same ease — a simple upgrade.", isConsumable: true },
+            { name: "Whole Wheat Spaghetti (500g)", cost: 1.10, icon: "fa-wheat-awn", color: "amber", desc: "Higher fibre spaghetti that keeps you fuller for longer than white pasta.", isConsumable: true },
+            { name: "Whole Wheat Penne (500g)", cost: 1.10, icon: "fa-wheat-awn", color: "amber", desc: "Swap standard penne for this — same taste, more fibre, better blood sugar response.", isConsumable: true },
+            { name: "Quinoa (500g)", cost: 3.50, icon: "fa-bowl-rice", color: "amber", desc: "A complete plant protein and complex carb in one — cook like rice and use anywhere.", isConsumable: true },
+            { name: "Couscous (500g)", cost: 1.50, icon: "fa-bowl-rice", color: "amber", desc: "Ready in five minutes with just boiling water — the fastest carb you can cook.", isConsumable: true },
+            { name: "Bulgur Wheat (500g)", cost: 1.80, icon: "fa-wheat-awn", color: "amber", desc: "High fibre grain with a satisfying bite — works hot or cold in salads.", isConsumable: true },
+            { name: "Pearl Barley (500g)", cost: 1.50, icon: "fa-wheat-awn", color: "amber", desc: "One of the highest fibre grains available — extremely filling and cheap.", isConsumable: true },
+            { name: "Wholemeal Bread (800g)", cost: 1.20, icon: "fa-bread-slice", color: "amber", desc: "More fibre and nutrients than white — if you eat bread, make it this one.", isConsumable: true },
+            { name: "Wholemeal Pitta Breads (6 pack)", cost: 1.00, icon: "fa-bread-slice", color: "amber", desc: "A convenient whole grain carb that works as a wrap, side, or snack base.", isConsumable: true },
+            { name: "Wholegrain Wraps (8 pack)", cost: 1.80, icon: "fa-bread-slice", color: "amber", desc: "A higher-fibre alternative to white tortillas — use for quick protein wraps.", isConsumable: true },
+            { name: "Ryvita Crispbreads (250g)", cost: 2.00, icon: "fa-wheat-awn", color: "amber", desc: "High fibre crispbreads that keep you fuller than crackers at fewer calories.", isConsumable: true },
+            { name: "Rice Cakes Plain (130g)", cost: 1.50, icon: "fa-bowl-rice", color: "gray", desc: "Very low calorie base for toppings — good for portion-controlled snacking.", isConsumable: true },
+            { name: "Corn Thins (150g)", cost: 2.00, icon: "fa-seedling", color: "yellow", desc: "Lighter than rice cakes with a slight sweetness — a low-calorie snack base.", isConsumable: true },
+            { name: "Wholemeal English Muffins (4 pack)", cost: 1.20, icon: "fa-bread-slice", color: "amber", desc: "Portion-controlled carb base for eggs and protein — a solid breakfast choice.", isConsumable: true },
+            { name: "Oatcakes (300g)", cost: 2.00, icon: "fa-wheat-awn", color: "amber", desc: "Oat-based crackers with more fibre than standard crackers — pair with cottage cheese.", isConsumable: true },
+            { name: "Lentil Pasta (500g)", cost: 3.00, icon: "fa-bowl-rice", color: "red", desc: "Almost double the protein of standard pasta — worth the extra pound.", isConsumable: true },
+            { name: "Chickpea Pasta (500g)", cost: 3.00, icon: "fa-bowl-rice", color: "amber", desc: "Higher protein and fibre than wheat pasta — looks and cooks exactly the same.", isConsumable: true },
+            { name: "Rice Noodles (200g)", cost: 1.50, icon: "fa-bowl-rice", color: "amber", desc: "A gluten-free carb option that cooks in minutes — works in any Asian-style dish.", isConsumable: true },
+            { name: "Buckwheat (500g)", cost: 2.50, icon: "fa-wheat-awn", color: "gray", desc: "Gluten-free grain with more protein than most cereals and a nutty flavour.", isConsumable: true },
+            { name: "Sourdough Bread (400g)", cost: 2.00, icon: "fa-bread-slice", color: "amber", desc: "Fermented bread with a lower glycaemic impact than standard white or brown loaves.", isConsumable: true },
+            { name: "Seeded Bread (800g)", cost: 1.80, icon: "fa-bread-slice", color: "amber", desc: "More fibre and healthy fats from seeds — a better daily bread than standard wholemeal.", isConsumable: true },
+            { name: "Wholewheat Bagels (5 pack)", cost: 1.50, icon: "fa-bread-slice", color: "amber", desc: "Portion-controlled carb base for eggs or smoked salmon — a solid breakfast option.", isConsumable: true },
+            { name: "Weetabix (24 pack)", cost: 2.50, icon: "fa-wheat-awn", color: "amber", desc: "Whole wheat cereal with minimal sugar — a reliable fibre-rich breakfast for the money.", isConsumable: true },
+            { name: "High Protein Bread (400g)", cost: 2.50, icon: "fa-bread-slice", color: "amber", desc: "More protein per slice than standard bread — a useful swap if bread is a daily habit.", isConsumable: true },
+
+            // ===== CARBS - LEGUMES & TINNED (17 items) =====
+            { name: "Tinned Chickpeas (400g)", cost: 0.65, icon: "fa-seedling", color: "amber", desc: "Plant protein and fibre for under £1 — add to curries, salads, or roast them crispy.", isConsumable: true },
+            { name: "Tinned Chickpeas (3 pack)", cost: 1.80, icon: "fa-seedling", color: "amber", desc: "Stock your cupboard — chickpeas are one of the most versatile plant proteins available.", isConsumable: true },
+            { name: "Tinned Kidney Beans (400g)", cost: 0.65, icon: "fa-seedling", color: "red", desc: "High in plant protein and fibre — mix into curries or salads for a free protein boost.", isConsumable: true },
+            { name: "Tinned Black Beans (400g)", cost: 0.80, icon: "fa-seedling", color: "gray", desc: "Protein and fibre-dense legume — underused in UK kitchens and extremely versatile.", isConsumable: true },
+            { name: "Tinned Lentils (400g)", cost: 0.70, icon: "fa-seedling", color: "red", desc: "Ready-to-eat plant protein with no soaking required — the fastest legume in the cupboard.", isConsumable: true },
+            { name: "Red Lentils Dried (1kg)", cost: 1.80, icon: "fa-bowl-rice", color: "red", desc: "Cheap plant protein and fibre in one bag — works in any dal or soup.", isConsumable: true },
+            { name: "Green Lentils Dried (500g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Hold their shape better than red lentils — great for salads and hearty soups.", isConsumable: true },
+            { name: "Tinned Butter Beans (400g)", cost: 0.70, icon: "fa-seedling", color: "gray", desc: "Creamy, filling legume with solid plant protein — one of the most underrated tins.", isConsumable: true },
+            { name: "Tinned Cannellini Beans (400g)", cost: 0.70, icon: "fa-seedling", color: "gray", desc: "Soft white beans that blend smoothly into soups and stews for free protein.", isConsumable: true },
+            { name: "Tinned Mixed Beans (400g)", cost: 0.80, icon: "fa-seedling", color: "green", desc: "Variety of beans in one tin — easy protein and fibre booster for salads.", isConsumable: true },
+            { name: "Dried Chickpeas (500g)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Cheaper per portion than tinned — soak overnight and cook in bulk.", isConsumable: true },
+            { name: "Split Peas (500g)", cost: 1.20, icon: "fa-seedling", color: "green", desc: "One of the highest fibre dried legumes available — makes a brilliant thick soup.", isConsumable: true },
+            { name: "Low Sugar Baked Beans (415g)", cost: 1.00, icon: "fa-seedling", color: "orange", desc: "Cheap plant protein and fibre — choose the reduced sugar version and it earns its place.", isConsumable: true },
+            { name: "Tinned Chopped Tomatoes (400g)", cost: 0.55, icon: "fa-seedling", color: "red", desc: "The base of a hundred healthy meals — a kitchen essential that costs almost nothing.", isConsumable: true },
+            { name: "Tinned Chopped Tomatoes (4 pack)", cost: 2.00, icon: "fa-seedling", color: "red", desc: "Stock up — tinned tomatoes are the foundation of meal prep on a budget.", isConsumable: true },
+            { name: "Passata (690g)", cost: 0.90, icon: "fa-bottle-droplet", color: "red", desc: "Smooth tomato base for sauces — lower sugar than jarred pasta sauces.", isConsumable: true },
+            { name: "Tinned Sweetcorn (198g)", cost: 0.60, icon: "fa-seedling", color: "yellow", desc: "Convenient carb and fibre addition to salads, rice, and egg dishes.", isConsumable: true },
+
+            // ===== HEALTHY FATS (30 items) =====
+            { name: "Extra Virgin Olive Oil (500ml)", cost: 4.50, icon: "fa-bottle-droplet", color: "green", desc: "The gold standard cooking fat for heart health — a little goes a long way.", isConsumable: true },
+            { name: "Extra Virgin Olive Oil (1L)", cost: 7.00, icon: "fa-bottle-droplet", color: "green", desc: "Better value per ml — stock up on the healthiest cooking oil you can buy.", isConsumable: true },
+            { name: "Rapeseed Oil (1L)", cost: 2.50, icon: "fa-bottle-droplet", color: "yellow", desc: "UK-grown oil with a high smoke point and good omega-3 profile — a cheaper olive oil alternative.", isConsumable: true },
+            { name: "Light Olive Oil Spray (200ml)", cost: 2.00, icon: "fa-bottle-droplet", color: "green", desc: "Calorie-controlled cooking spray — one press adds healthy fat without overdoing it.", isConsumable: true },
+            { name: "Avocado Oil Spray (200ml)", cost: 3.50, icon: "fa-bottle-droplet", color: "green", desc: "High smoke point cooking spray — ideal for high heat cooking with healthy fats.", isConsumable: true },
+            { name: "Sesame Oil (150ml)", cost: 2.50, icon: "fa-bottle-droplet", color: "amber", desc: "A flavour-first oil — a small drizzle transforms any Asian-style meal.", isConsumable: true },
+            { name: "Coconut Oil (500g)", cost: 4.00, icon: "fa-bottle-droplet", color: "amber", desc: "Solid at room temperature, high smoke point — a useful cooking fat for high heat methods.", isConsumable: true },
+            { name: "Avocados (2 pack)", cost: 1.80, icon: "fa-seedling", color: "green", desc: "Monounsaturated fats, fibre, and potassium in one — slice and add to anything.", isConsumable: true },
+            { name: "Avocados (4 pack)", cost: 3.00, icon: "fa-seedling", color: "green", desc: "Stock up — avocados are one of the best single-ingredient fat sources you can eat.", isConsumable: true },
+            { name: "Peanut Butter Smooth (340g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "Healthy fats and protein in one jar — check the label has no added sugar.", isConsumable: true },
+            { name: "Peanut Butter Crunchy (340g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "Same nutritional value as smooth with more texture — a solid daily fat source.", isConsumable: true },
+            { name: "Almond Butter (170g)", cost: 4.00, icon: "fa-jar", color: "amber", desc: "Higher in vitamin E than peanut butter — a premium nut butter worth having.", isConsumable: true },
+            { name: "Mixed Nuts Unsalted (200g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "Healthy fats, protein, and minerals in a handful — the smart snack.", isConsumable: true },
+            { name: "Almonds Unsalted (200g)", cost: 2.80, icon: "fa-jar", color: "amber", desc: "High in vitamin E and magnesium — a portion-controlled fat and protein snack.", isConsumable: true },
+            { name: "Walnuts (200g)", cost: 2.80, icon: "fa-jar", color: "amber", desc: "The highest omega-3 of any nut — eat a handful daily for brain and heart health.", isConsumable: true },
+            { name: "Cashews Unsalted (200g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "Higher in iron and zinc than most nuts — a satisfying snack with a creamy texture.", isConsumable: true },
+            { name: "Pistachios (200g)", cost: 3.00, icon: "fa-jar", color: "green", desc: "One of the highest protein nuts — shelling them slows you down and stops overeating.", isConsumable: true },
+            { name: "Brazil Nuts (200g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "Just two Brazil nuts covers your entire daily selenium requirement.", isConsumable: true },
+            { name: "Pecan Nuts (150g)", cost: 3.00, icon: "fa-jar", color: "amber", desc: "Rich in antioxidants and healthy fats — one of the most anti-inflammatory nuts available.", isConsumable: true },
+            { name: "Sunflower Seeds (200g)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Vitamin E rich and high in healthy fats — sprinkle over salads or yoghurt.", isConsumable: true },
+            { name: "Pumpkin Seeds (200g)", cost: 2.00, icon: "fa-seedling", color: "green", desc: "High in magnesium, zinc, and plant protein — a daily handful makes a difference.", isConsumable: true },
+            { name: "Chia Seeds (250g)", cost: 3.00, icon: "fa-seedling", color: "gray", desc: "Omega-3, fibre, and protein in one tiny seed — soak in oats or yoghurt overnight.", isConsumable: true },
+            { name: "Flaxseeds Milled (500g)", cost: 2.00, icon: "fa-seedling", color: "amber", desc: "Ground flaxseed is one of the best plant-based omega-3 sources available.", isConsumable: true },
+            { name: "Sesame Seeds (100g)", cost: 1.20, icon: "fa-seedling", color: "amber", desc: "Calcium-rich seed — toast and sprinkle over meals for healthy fats and crunch.", isConsumable: true },
+            { name: "Tahini (300g)", cost: 3.00, icon: "fa-jar", color: "amber", desc: "Sesame seed paste packed with calcium and healthy fats — great in dressings and dips.", isConsumable: true },
+            { name: "Hemp Seeds (250g)", cost: 3.50, icon: "fa-seedling", color: "green", desc: "A complete plant protein with an ideal omega-3 to omega-6 ratio.", isConsumable: true },
+            { name: "Mixed Seeds (200g)", cost: 2.50, icon: "fa-seedling", color: "amber", desc: "Chia, pumpkin, sunflower, and flax in one bag — sprinkle on anything for a nutrition boost.", isConsumable: true },
+            { name: "Peanuts Unsalted (400g)", cost: 2.00, icon: "fa-jar", color: "amber", desc: "The most affordable nut on the shelf — high protein and healthy fat for the price.", isConsumable: true },
+            { name: "Macadamia Nuts (150g)", cost: 4.00, icon: "fa-jar", color: "amber", desc: "Highest healthy fat content of any nut — extremely satiating in small portions.", isConsumable: true },
+            { name: "Pine Nuts (100g)", cost: 2.50, icon: "fa-seedling", color: "amber", desc: "High in protein and healthy fats — toast them to bring out their buttery flavour.", isConsumable: true },
+
+            // ===== SUPPLEMENTS (5 items) =====
+            { name: "Myprotein Impact Whey Chocolate (1kg)", cost: 24.00, icon: "fa-jar", color: "indigo", desc: "A reliable, affordable whey to hit your daily protein without eating a mountain of food.", isConsumable: true },
+            { name: "Myprotein Impact Whey Vanilla (1kg)", cost: 24.00, icon: "fa-jar", color: "indigo", desc: "Unfussy vanilla whey that blends clean — the most versatile flavour to bake or shake with.", isConsumable: true },
+            { name: "Myprotein Impact Whey Strawberry (1kg)", cost: 24.00, icon: "fa-jar", color: "pink", desc: "A solid flavour that does not taste artificial — easy way to hit protein targets daily.", isConsumable: true },
+            { name: "Myprotein Impact Whey Unflavoured (2.5kg)", cost: 45.00, icon: "fa-jar", color: "indigo", desc: "Bulk buy your whey and cut the cost per serving — the smarter long-term investment.", isConsumable: true },
+            { name: "Creatine Monohydrate (500g)", cost: 14.00, icon: "fa-pills", color: "blue", desc: "The most researched supplement in existence — supports strength, power, and muscle retention.", isConsumable: true },
+
+            // ===== DRINKS & HYDRATION (13 items) =====
+            { name: "Green Tea Bags (80 pack)", cost: 2.50, icon: "fa-mug-hot", color: "green", desc: "A mild caffeine boost with antioxidants — a smarter swap for sugary afternoon drinks.", isConsumable: true },
+            { name: "Peppermint Tea Bags (50 pack)", cost: 2.00, icon: "fa-mug-hot", color: "green", desc: "Calorie-free drink that supports digestion and reduces bloating after meals.", isConsumable: true },
+            { name: "Ginger Tea Bags (40 pack)", cost: 2.00, icon: "fa-mug-hot", color: "amber", desc: "Anti-inflammatory and great for digestion — a simple daily habit with real benefits.", isConsumable: true },
+            { name: "Chamomile Tea Bags (50 pack)", cost: 1.80, icon: "fa-mug-hot", color: "yellow", desc: "Caffeine-free evening drink that supports relaxation and better sleep quality.", isConsumable: true },
+            { name: "Coconut Water (1L)", cost: 2.50, icon: "fa-bottle-droplet", color: "teal", desc: "Natural electrolytes without artificial colours — a better post-workout drink than sports drinks.", isConsumable: true },
+            { name: "Coconut Water (330ml, 6 pack)", cost: 5.00, icon: "fa-bottle-droplet", color: "teal", desc: "Portable natural hydration for on-the-go — a clean alternative to sports drinks.", isConsumable: true },
+            { name: "Zero Sugar Squash (1L)", cost: 1.00, icon: "fa-bottle-droplet", color: "blue", desc: "Makes water easier to drink — if you are not hitting your water intake, this helps.", isConsumable: true },
+            { name: "Sparkling Water (8 x 500ml)", cost: 3.00, icon: "fa-bottle-droplet", color: "blue", desc: "The carbonation makes it more satisfying than still water — helps curb fizzy drink cravings.", isConsumable: true },
+            { name: "Herbal Tea Variety Pack (40 bags)", cost: 2.50, icon: "fa-mug-hot", color: "green", desc: "Multiple caffeine-free flavours to keep hydration interesting throughout the day.", isConsumable: true },
+            { name: "Matcha Powder (100g)", cost: 5.00, icon: "fa-mug-hot", color: "green", desc: "A slow-release caffeine hit with L-theanine for calm focus — no jitters unlike coffee.", isConsumable: true },
+            { name: "Black Tea Bags (160 pack)", cost: 3.00, icon: "fa-mug-hot", color: "amber", desc: "Zero calories when drunk without sugar — a simple daily staple that costs pennies per cup.", isConsumable: true },
+            { name: "Beetroot Juice (1L)", cost: 3.00, icon: "fa-bottle-droplet", color: "red", desc: "Natural nitrates that support blood pressure and exercise endurance.", isConsumable: true },
+            { name: "Tart Cherry Juice (500ml)", cost: 3.50, icon: "fa-bottle-droplet", color: "red", desc: "Evidence supports muscle recovery and sleep quality — drink after training.", isConsumable: true },
+
+            // ===== CONDIMENTS, SPICES & FLAVOURING (19 items) =====
+            { name: "Hot Sauce (150ml)", cost: 1.50, icon: "fa-pepper-hot", color: "red", desc: "Zero calories and capsaicin has real appetite control benefits — the best condiment for diet food.", isConsumable: true },
+            { name: "Balsamic Vinegar (250ml)", cost: 2.00, icon: "fa-bottle-droplet", color: "gray", desc: "A low-calorie dressing base that adds sweetness and depth to salads.", isConsumable: true },
+            { name: "Apple Cider Vinegar (500ml)", cost: 2.00, icon: "fa-bottle-droplet", color: "amber", desc: "Some evidence for improved blood sugar response when used before meals.", isConsumable: true },
+            { name: "Wholegrain Mustard (215g)", cost: 1.50, icon: "fa-jar", color: "amber", desc: "Low calorie and full of flavour — adds depth to dressings, marinades, and proteins.", isConsumable: true },
+            { name: "Mixed Herbs (25g)", cost: 1.00, icon: "fa-leaf", color: "green", desc: "Season your food instead of reaching for salt — herbs add flavour at zero calories.", isConsumable: true },
+            { name: "Paprika (50g)", cost: 1.00, icon: "fa-pepper-hot", color: "red", desc: "Adds colour and depth to chicken, eggs, and roasted veg with no calorie cost.", isConsumable: true },
+            { name: "Cumin (50g)", cost: 1.00, icon: "fa-seedling", color: "amber", desc: "An essential spice for South Asian cooking that adds warmth without salt.", isConsumable: true },
+            { name: "Turmeric (50g)", cost: 1.00, icon: "fa-seedling", color: "amber", desc: "Curcumin has real anti-inflammatory properties — add a pinch to meals daily.", isConsumable: true },
+            { name: "Cayenne Pepper (50g)", cost: 1.00, icon: "fa-pepper-hot", color: "red", desc: "Thermogenic spice that adds heat and may support appetite control.", isConsumable: true },
+            { name: "Cinnamon (50g)", cost: 1.00, icon: "fa-seedling", color: "amber", desc: "Some evidence for improved blood sugar regulation — add to oats and yoghurt daily.", isConsumable: true },
+            { name: "Garlic Powder (70g)", cost: 1.20, icon: "fa-seedling", color: "amber", desc: "When you run out of fresh garlic — a convenient way to season any dish.", isConsumable: true },
+            { name: "Onion Powder (70g)", cost: 1.20, icon: "fa-seedling", color: "amber", desc: "Adds savoury flavour to marinades and rubs with no calorie impact.", isConsumable: true },
+            { name: "Smoked Paprika (50g)", cost: 1.20, icon: "fa-pepper-hot", color: "red", desc: "Adds a smoky depth to proteins and vegetables without any sauce.", isConsumable: true },
+            { name: "Chilli Flakes (30g)", cost: 1.00, icon: "fa-pepper-hot", color: "red", desc: "Capsaicin has real thermogenic effects — use liberally to make plain food interesting.", isConsumable: true },
+            { name: "Ground Coriander (25g)", cost: 1.00, icon: "fa-seedling", color: "green", desc: "Essential for South Asian cooking — adds citrus-like warmth without salt.", isConsumable: true },
+            { name: "Garam Masala (50g)", cost: 1.20, icon: "fa-seedling", color: "amber", desc: "Spice blend that seasons food without adding calories — keeps cultural cooking clean.", isConsumable: true },
+            { name: "Fish Sauce (200ml)", cost: 1.50, icon: "fa-bottle-droplet", color: "amber", desc: "A few drops adds enormous umami depth to any Asian-inspired dish.", isConsumable: true },
+            { name: "Low Sodium Stock Cubes (8 pack)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Adds depth and flavour to soups, rice, and sauces without loading up on salt.", isConsumable: true },
+            { name: "Nutritional Yeast Flakes (125g)", cost: 3.50, icon: "fa-seedling", color: "amber", desc: "A complete plant protein and B12 source with a cheesy flavour — sprinkle on anything.", isConsumable: true },
+
+            // ===== PLANT-BASED PROTEINS & EXTRAS (15 items) =====
+            { name: "Tofu Firm (396g)", cost: 2.00, icon: "fa-seedling", color: "gray", desc: "Complete plant protein that takes on any marinade — press, season, and fry.", isConsumable: true },
+            { name: "Smoked Tofu (200g)", cost: 2.50, icon: "fa-seedling", color: "gray", desc: "Ready-to-eat plant protein with a smoky flavour — no cooking required.", isConsumable: true },
+            { name: "Tempeh (200g)", cost: 3.00, icon: "fa-seedling", color: "green", desc: "Fermented soya with more protein than tofu and natural probiotic benefits.", isConsumable: true },
+            { name: "Quorn Mince (300g)", cost: 2.50, icon: "fa-seedling", color: "green", desc: "High protein meat-free mince — use in any recipe that calls for beef mince.", isConsumable: true },
+            { name: "Quorn Fillets (300g)", cost: 2.50, icon: "fa-seedling", color: "green", desc: "Meat-free chicken alternative with solid protein — seasons well and cooks quickly.", isConsumable: true },
+            { name: "Low Fat Hummus (200g)", cost: 1.50, icon: "fa-jar", color: "amber", desc: "Plant protein and healthy fat in a dip — use with veg sticks not crisps.", isConsumable: true },
+            { name: "Sauerkraut (500g)", cost: 2.00, icon: "fa-jar", color: "green", desc: "Fermented cabbage with billions of probiotic cultures — supports gut health cheaply.", isConsumable: true },
+            { name: "Kimchi (300g)", cost: 3.00, icon: "fa-jar", color: "red", desc: "Fermented Korean vegetables — a powerful probiotic food with a punchy flavour.", isConsumable: true },
+            { name: "Tinned Peaches in Juice (420g)", cost: 1.00, icon: "fa-seedling", color: "orange", desc: "Fruit at any time of year — choose in juice not syrup to keep sugar in check.", isConsumable: true },
+            { name: "Tinned Pineapple in Juice (435g)", cost: 1.00, icon: "fa-seedling", color: "yellow", desc: "Convenient tropical fruit with bromelain enzyme — choose in juice only.", isConsumable: true },
+            { name: "Roasted Chickpeas (40g)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "Crunchy, high-protein snack that replaces crisps without a second thought.", isConsumable: true },
+            { name: "Seaweed Snacks (24g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "Almost zero calories with iodine for thyroid health — a genuinely unique snack.", isConsumable: true },
+            { name: "Dark Chocolate 85% (100g)", cost: 1.80, icon: "fa-seedling", color: "amber", desc: "High cocoa means less sugar and more antioxidants — a few squares is a legitimate treat.", isConsumable: true },
+            { name: "Dark Chocolate 90% (100g)", cost: 2.00, icon: "fa-seedling", color: "gray", desc: "Minimal sugar, maximum antioxidants — one of the few genuinely healthy indulgences.", isConsumable: true },
+            { name: "Plain Popcorn (80g)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "A whole grain, high volume, low calorie snack — only works if you buy plain.", isConsumable: true },
+
+            // ===== PANTRY EXTRAS (10 items) =====
+            { name: "Oat Bran (500g)", cost: 2.00, icon: "fa-wheat-awn", color: "amber", desc: "Even higher in soluble fibre than oats — stirs into porridge or yoghurt easily.", isConsumable: true },
+            { name: "Cacao Powder (200g)", cost: 4.00, icon: "fa-seedling", color: "amber", desc: "The unprocessed form of cocoa — more antioxidants with less processing than cocoa.", isConsumable: true },
+            { name: "Psyllium Husk Powder (200g)", cost: 4.00, icon: "fa-seedling", color: "amber", desc: "The most powerful fibre supplement available — virtually tasteless stirred into water.", isConsumable: true },
+            { name: "Ground Almonds (200g)", cost: 2.50, icon: "fa-jar", color: "amber", desc: "A versatile healthy fat and protein ingredient for cooking and baking.", isConsumable: true },
+            { name: "Desiccated Coconut Unsweetened (200g)", cost: 1.50, icon: "fa-seedling", color: "amber", desc: "MCT fat source and fibre — add a small amount to oats or smoothies.", isConsumable: true },
+            { name: "Raisins (500g)", cost: 2.50, icon: "fa-seedling", color: "purple", desc: "Iron-rich natural sugar — a better pre-workout carb than most bars on the shelf.", isConsumable: true },
+            { name: "Jarred Roasted Peppers (280g)", cost: 1.80, icon: "fa-seedling", color: "red", desc: "Ready-to-use roasted peppers — a convenient flavour-packed addition to salads and wraps.", isConsumable: true },
+            { name: "Olives in Brine (185g)", cost: 1.50, icon: "fa-seedling", color: "green", desc: "A healthy fat source rich in oleic acid — a satisfying snack that portions itself.", isConsumable: true },
+            { name: "Coconut Milk Reduced Fat (400ml tin)", cost: 1.50, icon: "fa-bottle-droplet", color: "amber", desc: "A creamy cooking base for curries with fewer calories than full-fat versions.", isConsumable: true },
+            { name: "Dried Cranberries (200g)", cost: 2.00, icon: "fa-seedling", color: "red", desc: "Add to oats or salads for natural sweetness and antioxidants — choose no added sugar.", isConsumable: true }
+        ];
+
+        function startCalculation() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const loadingText = document.getElementById('loading-text');
+            loadingOverlay.classList.remove('hidden');
+            
+            setTimeout(() => { loadingText.innerText = "Finding hidden savings..."; }, 1500);
+            setTimeout(() => { loadingText.innerText = "Building your grocery list..."; }, 3500);
+
+            setTimeout(() => {
+                loadingOverlay.classList.add('hidden');
+                loadingText.innerText = "Analyzing habits..."; 
+                calculateSavings();
+            }, 5000);
+        }
+
+        function calculateSavings() {
+            const takeaways = parseFloat(document.getElementById('takeaways').value) || 0;
+            const lunches = parseFloat(document.getElementById('lunches').value) || 0;
+            const coffees = parseFloat(document.getElementById('coffees').value) || 0;
+            const supps = parseFloat(document.getElementById('supps').value) || 0;
+            const junk = parseFloat(document.getElementById('junk').value) || 0;
+
+            const totalInput = takeaways + lunches + coffees + supps + junk;
+            let totalSavings = 0;
+            const actions = [];
+
+            if (takeaways > 0) {
+                let save = takeaways * BENCHMARKS.takeaways_pct;
+                totalSavings += save;
+                actions.push({ title: 'The Fakeaway Swap', save: save, desc: 'Swap 3 out of 4 deliveries for high-protein, home-cooked "fakeaways".' });
+            }
+            if (lunches > 0) {
+                let save = lunches * BENCHMARKS.lunches_pct;
+                totalSavings += save;
+                actions.push({ title: 'The Meal Prep Win', save: save, desc: 'Stop spending £4-5 daily on meal deals. Batch cook lunches on Sunday for under £2 a portion.' });
+            }
+            if (coffees > 0) {
+                let save = coffees * BENCHMARKS.coffees_pct;
+                totalSavings += save;
+                actions.push({ title: 'The Flask Habit', save: save, desc: 'Invest in a good thermos. Prep coffee at home instead of buying out.' });
+            }
+            if (supps > 0) {
+                let save = supps * BENCHMARKS.supps_pct;
+                totalSavings += save;
+                actions.push({ title: 'The Supplement Purge', save: save, desc: 'Stop wasting money on BCAAs, fat burners, or skinny teas. Stick to basic whey and real food.' });
+            }
+            if (junk > 0) {
+                let save = junk * BENCHMARKS.junk_pct;
+                totalSavings += save;
+                actions.push({ title: 'The Empty Calorie Cut', save: save, desc: 'Drop the corner-shop crisps and fizzy drinks. A massive win for your waistline and your wallet.' });
+            }
+
+            const totalSavedEl = document.getElementById('total-saved');
+            totalSavedEl.classList.remove('pop-in');
+            void totalSavedEl.offsetWidth; 
+            
+            const minSave = Math.floor(totalSavings);
+            const maxSave = Math.floor(totalInput);
+            
+            if (minSave === maxSave || minSave === 0) {
+                totalSavedEl.innerText = `£${maxSave}`;
+            } else {
+                totalSavedEl.innerText = `£${minSave} - £${maxSave}`;
+            }
+            
+            totalSavedEl.classList.add('pop-in');
+            
+            generatePurchasingPower(totalSavings);
+            renderActionCards(actions);
+
+            const resultsView = document.getElementById('results-view');
+            resultsView.classList.remove('hidden');
+            setTimeout(() => {
+                resultsView.classList.remove('translate-x-full');
+            }, 10);
+        }
+
+        function generatePurchasingPower(savingsAmt) {
+            const container = document.getElementById('purchasing-power-list');
+            container.innerHTML = '';
+
+            if (savingsAmt < 4.50) {
+                container.innerHTML = `<div class="p-4 bg-gray-100 rounded-xl text-gray-600 text-sm text-center">Your expenses are highly optimized. Great job!</div>`;
+                return;
+            }
+
+            let remainingBalance = savingsAmt;
+            let itemsToBuy = [];
+            let shuffledRewards = [...REWARDS].sort(() => 0.5 - Math.random());
+
+            for (let i = 0; i < shuffledRewards.length; i++) {
+                let item = shuffledRewards[i];
+                if (remainingBalance >= item.cost) {
+                    let qty = 1;
+                    if (item.isConsumable && item.cost < 15) {
+                        qty = Math.floor(remainingBalance / item.cost);
+                        if (qty > 4) qty = 4; 
+                    }
+                    itemsToBuy.push({ ...item, qty: qty });
+                    remainingBalance -= (item.cost * qty);
+                }
+            }
+
+            itemsToBuy.forEach((item, index) => {
+                const delay = index * 0.15; 
+                const html = `
+                    <div class="bg-white rounded-xl shadow-sm border-l-4 border-${item.color}-500 p-3 flex items-center fade-in-up" style="animation-delay: ${delay}s">
+                        <div class="w-12 h-12 bg-${item.color}-50 text-${item.color}-600 rounded-full flex items-center justify-center text-xl flex-shrink-0">
+                            <i class="fas ${item.icon}"></i>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h4 class="font-bold text-gray-800 text-sm">${item.qty > 1 ? item.qty + 'x ' : ''}${item.name}</h4>
+                            <p class="text-xs text-gray-500">${item.desc}</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-gray-700">£${(item.cost * item.qty).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
+            });
+            
+            if(remainingBalance > 0){
+                 container.innerHTML += `
+                    <div class="text-center text-sm font-bold text-indigo-600 mt-2 fade-in-up" style="animation-delay: ${itemsToBuy.length * 0.15}s">
+                        + £${remainingBalance.toFixed(2)} left over for your healthy grocery fund!
+                    </div>
+                `;
+            }
+        }
+
+        function renderActionCards(actions) {
+            const container = document.getElementById('action-cards');
+            container.innerHTML = '';
+            actions.forEach(action => {
+                const cardHtml = `
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-bl-lg">
+                            Save £${Math.round(action.save)}
+                        </div>
+                        <h4 class="font-bold text-gray-800 mt-2"><i class="fas fa-arrow-right text-indigo-500 mr-2"></i>${action.title}</h4>
+                        <p class="text-sm text-gray-600 mt-1">${action.desc}</p>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        function closeResults() {
+            const resultsView = document.getElementById('results-view');
+            resultsView.classList.add('translate-x-full');
+            setTimeout(() => {
+                resultsView.classList.add('hidden');
+                document.getElementById('purchasing-power-list').innerHTML = '';
+            }, 300);
+        }
+    </script>
+</body>
+</html>
