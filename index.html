@@ -392,11 +392,21 @@
 
         function renderRealityCheck(totalInput) {
             const container = document.getElementById('reality-check');
+            const monthly = Math.round(totalInput);
+            const weekly  = Math.round(totalInput / 4.3);
             container.innerHTML = `
-                <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center fade-in-up">
-                    <p class="text-sm text-red-400 font-medium">You're currently spending</p>
-                    <p class="text-4xl font-black text-red-600 mt-1">£${Math.round(totalInput)}</p>
-                    <p class="text-sm text-red-400 font-medium mt-1">every month on things that aren't serving you.</p>
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-4 fade-in-up">
+                    <p class="text-sm text-red-400 font-medium text-center mb-3">You're currently spending on things that aren't serving you</p>
+                    <div class="flex gap-3">
+                        <div class="flex-1 bg-white rounded-xl p-3 text-center">
+                            <p class="text-3xl font-black text-red-600">£${monthly}</p>
+                            <p class="text-xs text-red-400 font-semibold mt-1">every month</p>
+                        </div>
+                        <div class="flex-1 bg-white rounded-xl p-3 text-center">
+                            <p class="text-3xl font-black text-red-600">£${weekly}</p>
+                            <p class="text-xs text-red-400 font-semibold mt-1">every week</p>
+                        </div>
+                    </div>
                 </div>
             `;
         }
