@@ -131,6 +131,12 @@
         </div>
 
         <div class="absolute bottom-0 w-full bg-white p-4 border-t border-gray-100 z-10" id="button-container">
+            <div class="bg-gradient-to-r from-amber-400 to-orange-500 rounded-2xl p-4 mb-3">
+                <p class="text-white text-sm font-medium leading-relaxed text-center">
+                    <i class="fas fa-lightbulb text-white mr-1"></i>
+                    Think about your whole week — every coffee, every takeaway, every impulse buy. Be honest with yourself. The more accurate you are, the more powerful your results will be.
+                </p>
+            </div>
             <button onclick="startCalculation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform transform active:scale-95 text-lg flex justify-center items-center">
                 Reveal My Hidden Cash <i class="fas fa-magic ml-2"></i>
             </button>
@@ -191,11 +197,10 @@
             takeaways_pct: 0.75, lunches_pct: 0.80, coffees_pct: 0.80, supps_pct: 1.00, junk_pct: 0.80
         };
 
-        function getWeekSeed() {
-            const now = new Date();
-            const startOfYear = new Date(now.getFullYear(), 0, 1);
-            const week = Math.ceil((((now - startOfYear) / 86400000) + startOfYear.getDay() + 1) / 7);
-            return (now.getFullYear() * 100) + week;
+        let currentSeed = 1;
+
+        function newSeed() {
+            currentSeed = Math.floor(Math.random() * 999983) + 1;
         }
 
         function seededRandom(seed) {
@@ -330,7 +335,8 @@
             }
             
             totalSavedEl.classList.add('pop-in');
-            
+
+            newSeed();
             renderResultCards(totalSavings);
             renderActionCards(actions);
 
@@ -347,7 +353,7 @@
             cardsContainer.innerHTML = '';
             projContainer.innerHTML = '';
 
-            const seed = getWeekSeed();
+            const seed = currentSeed;
             const cards = [];
 
             // Pick 2 nutrition bundles
