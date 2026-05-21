@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expense Optimizer & Savings Finder</title>
+    <title>ZA Hidden Cash Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -25,19 +25,19 @@
 <body class="flex justify-center min-h-screen bg-gray-100 p-4 md:p-8 relative overflow-hidden">
 
     <!-- SECURITY PADLOCK OVERLAY -->
-    <div id="pin-overlay" class="absolute inset-0 bg-indigo-900/95 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
+    <div id="pin-overlay" class="absolute inset-0 bg-red-900/95 backdrop-blur-sm z-[100] flex flex-col items-center justify-center p-6 transition-opacity duration-500">
         <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-            <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+            <div class="w-16 h-16 bg-red-100 text-red-800 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
                 <i class="fas fa-lock"></i>
             </div>
             <h2 class="text-2xl font-bold text-gray-800 mb-2">Client Access</h2>
-            <p class="text-gray-500 text-sm mb-6">Please enter this month's access PIN to use the Opportunity Calculator.</p>
+            <p class="text-gray-500 text-sm mb-6">Please enter this month's access PIN to use the ZA Hidden Cash Calculator.</p>
             
-            <input type="password" id="pin-input" class="w-full text-center text-3xl tracking-[0.5em] font-bold bg-gray-50 border border-gray-300 rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-4" placeholder="••••" maxlength="4">
+            <input type="password" id="pin-input" class="w-full text-center text-3xl tracking-[0.5em] font-bold bg-gray-50 border border-gray-300 rounded-xl py-3 focus:outline-none focus:ring-2 focus:ring-red-700 mb-4" placeholder="••••" maxlength="4">
             
             <p id="pin-error" class="text-red-500 text-sm font-bold hidden mb-4">Incorrect PIN. Please try again.</p>
             
-            <button onclick="checkPin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-md transition-transform transform active:scale-95 text-lg">
+            <button onclick="checkPin()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-3 rounded-xl shadow-md transition-transform transform active:scale-95 text-lg">
                 Unlock <i class="fas fa-unlock ml-2"></i>
             </button>
         </div>
@@ -46,9 +46,9 @@
     <!-- MAIN APP WRAPPER -->
     <div id="app-wrapper" class="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden flex flex-col relative h-[850px] max-h-[90vh]">
         
-        <div class="bg-indigo-600 text-white p-6 text-center shadow-md z-10">
-            <h1 class="text-2xl font-bold mb-1">The Opportunity Calculator</h1>
-            <p class="text-sm text-indigo-100">See what your daily habits are really costing you.</p>
+        <div class="bg-red-800 text-white p-6 text-center shadow-md z-10">
+            <h1 class="text-2xl font-bold mb-1">ZA Hidden Cash Calculator</h1>
+            <p class="text-sm text-red-100">See what your daily habits are really costing you.</p>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 pb-56" id="main-content">
@@ -59,10 +59,10 @@
                     <div id="btn-weekly-label" class="font-bold text-gray-700 text-sm">Weekly</div>
                     <div id="btn-weekly-sub" class="text-xs text-gray-400 mt-1">I know my weekly spend</div>
                 </button>
-                <button id="btn-monthly" onclick="togglePeriod('monthly')" class="flex-1 bg-indigo-600 border-2 border-indigo-600 rounded-2xl p-4 text-center transition-all duration-200">
+                <button id="btn-monthly" onclick="togglePeriod('monthly')" class="flex-1 bg-red-800 border-2 border-red-800 rounded-2xl p-4 text-center transition-all duration-200">
                     <div class="text-xl mb-1">📆</div>
                     <div id="btn-monthly-label" class="font-bold text-white text-sm">Monthly</div>
-                    <div id="btn-monthly-sub" class="text-xs text-indigo-200 mt-1">I know my monthly spend</div>
+                    <div id="btn-monthly-sub" class="text-xs text-red-200 mt-1">I know my monthly spend</div>
                 </button>
             </div>
 
@@ -85,7 +85,7 @@
                     </div>
                     <div class="relative w-24">
                         <span class="absolute left-3 top-2 text-gray-500">£</span>
-                        <input type="number" id="takeaways" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                        <input type="number" id="takeaways" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-700" placeholder="0">
                     </div>
                 </div>
 
@@ -99,7 +99,7 @@
                     </div>
                     <div class="relative w-24">
                         <span class="absolute left-3 top-2 text-gray-500">£</span>
-                        <input type="number" id="lunches" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                        <input type="number" id="lunches" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-700" placeholder="0">
                     </div>
                 </div>
 
@@ -113,7 +113,7 @@
                     </div>
                     <div class="relative w-24">
                         <span class="absolute left-3 top-2 text-gray-500">£</span>
-                        <input type="number" id="coffees" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                        <input type="number" id="coffees" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-700" placeholder="0">
                     </div>
                 </div>
 
@@ -127,7 +127,7 @@
                     </div>
                     <div class="relative w-24">
                         <span class="absolute left-3 top-2 text-gray-500">£</span>
-                        <input type="number" id="supps" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                        <input type="number" id="supps" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-700" placeholder="0">
                     </div>
                 </div>
 
@@ -141,7 +141,7 @@
                     </div>
                     <div class="relative w-24">
                         <span class="absolute left-3 top-2 text-gray-500">£</span>
-                        <input type="number" id="junk" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+                        <input type="number" id="junk" class="w-full bg-white border border-gray-300 rounded-lg py-2 pl-6 pr-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-red-700" placeholder="0">
                     </div>
                 </div>
 
@@ -155,28 +155,28 @@
                     Think about your whole week — every coffee, every takeaway, every impulse buy. Be honest with yourself. The more accurate you are, the more powerful your results will be.
                 </p>
             </div>
-            <button onclick="startCalculation()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform transform active:scale-95 text-lg flex justify-center items-center">
+            <button onclick="startCalculation()" class="w-full bg-red-800 hover:bg-red-900 text-white font-bold py-4 rounded-xl shadow-lg transition-transform transform active:scale-95 text-lg flex justify-center items-center">
                 Reveal My Hidden Cash <i class="fas fa-magic ml-2"></i>
             </button>
         </div>
 
         <!-- LOADING OVERLAY -->
-        <div id="loading-overlay" class="absolute inset-0 bg-indigo-600 z-50 flex flex-col items-center justify-center hidden transition-opacity duration-300">
+        <div id="loading-overlay" class="absolute inset-0 bg-red-800 z-50 flex flex-col items-center justify-center hidden transition-opacity duration-300">
             <i class="fas fa-circle-notch fa-spin text-5xl text-white mb-6"></i>
             <h2 id="loading-text" class="text-xl font-bold text-white mb-2">Analyzing habits...</h2>
-            <p class="text-indigo-200 text-sm">Cross-referencing supermarket data</p>
+            <p class="text-red-200 text-sm">Cross-referencing supermarket data</p>
         </div>
 
         <!-- RESULTS OVERLAY -->
         <div id="results-view" class="absolute inset-0 bg-gray-50 z-20 flex flex-col hidden transform translate-x-full transition-transform duration-300">
 
-            <div class="bg-indigo-600 text-white p-6 pb-10 text-center rounded-b-3xl shadow-md relative">
-                <button onclick="closeResults()" class="absolute top-4 left-4 text-white hover:text-indigo-200">
+            <div class="bg-red-800 text-white p-6 pb-10 text-center rounded-b-3xl shadow-md relative">
+                <button onclick="closeResults()" class="absolute top-4 left-4 text-white hover:text-red-200">
                     <i class="fas fa-chevron-left text-xl"></i>
                 </button>
                 <h2 class="text-lg font-medium opacity-90 mt-2">You could redirect</h2>
                 <div class="text-5xl font-black tracking-tight mt-2 mb-2" id="total-saved">£0</div>
-                <p class="text-indigo-100 text-sm font-medium">every single month. Here's exactly where that could go.</p>
+                <p class="text-red-100 text-sm font-medium">every single month. Here's exactly where that could go.</p>
             </div>
 
             <div class="flex-1 overflow-y-auto p-5 -mt-4 bg-gray-50">
@@ -206,14 +206,14 @@
 
         function togglePeriod(type) {
             isWeekly = (type === 'weekly');
-            const activeBtn   = 'flex-1 bg-indigo-600 border-2 border-indigo-600 rounded-2xl p-4 text-center transition-all duration-200';
+            const activeBtn   = 'flex-1 bg-red-800 border-2 border-red-800 rounded-2xl p-4 text-center transition-all duration-200';
             const inactiveBtn = 'flex-1 bg-gray-100 border-2 border-transparent rounded-2xl p-4 text-center transition-all duration-200';
             document.getElementById('btn-weekly').className  = isWeekly ? activeBtn : inactiveBtn;
             document.getElementById('btn-monthly').className = isWeekly ? inactiveBtn : activeBtn;
             document.getElementById('btn-weekly-label').className  = isWeekly ? 'font-bold text-white text-sm'    : 'font-bold text-gray-700 text-sm';
-            document.getElementById('btn-weekly-sub').className    = isWeekly ? 'text-xs text-indigo-200 mt-1'    : 'text-xs text-gray-400 mt-1';
+            document.getElementById('btn-weekly-sub').className    = isWeekly ? 'text-xs text-red-200 mt-1'    : 'text-xs text-gray-400 mt-1';
             document.getElementById('btn-monthly-label').className = isWeekly ? 'font-bold text-gray-700 text-sm' : 'font-bold text-white text-sm';
-            document.getElementById('btn-monthly-sub').className   = isWeekly ? 'text-xs text-gray-400 mt-1'      : 'text-xs text-indigo-200 mt-1';
+            document.getElementById('btn-monthly-sub').className   = isWeekly ? 'text-xs text-gray-400 mt-1'      : 'text-xs text-red-200 mt-1';
             const period = isWeekly ? 'weekly' : 'monthly';
             document.getElementById('period-label').innerHTML = `Enter your estimated <strong>${period}</strong> spend in £. Leave blank if not applicable. Think hard. A rough idea is fine`;
         }
@@ -267,7 +267,7 @@
             { title: "your smoothie week sorted", cost: 10, icon: "fa-blender", color: "purple", tag: "Smoothie Week", desc: "Frozen mango, frozen berries, bananas, baby spinach, and oat milk. Just blend and go." },
             { title: "a healthy breakfast for the whole week", cost: 11, icon: "fa-sun", color: "yellow", tag: "Breakfast Week", desc: "Jumbo oats, chia seeds, frozen berries, Greek yoghurt, and bananas. No excuses at 7am." },
             { title: "a high-protein breakfast week", cost: 14, icon: "fa-egg", color: "amber", tag: "Protein Breakfast", desc: "Eggs, smoked salmon, Greek yoghurt, and fresh berries. Better than any café you'd pay £8 at." },
-            { title: "a full Sunday batch cook kit", cost: 13, icon: "fa-utensils", color: "indigo", tag: "Meal Prep", desc: "Chicken thighs, basmati rice, frozen veg, tinned tomatoes, and spices. Five lunches done in one afternoon." },
+            { title: "a full Sunday batch cook kit", cost: 13, icon: "fa-utensils", color: "slate", tag: "Meal Prep", desc: "Chicken thighs, basmati rice, frozen veg, tinned tomatoes, and spices. Five lunches done in one afternoon." },
             { title: "your lunchbox sorted Monday to Friday", cost: 12, icon: "fa-box", color: "blue", tag: "Lunch Prep", desc: "Chicken breast, wholegrain wraps, hummus, spinach, and cherry tomatoes. No more meal deals." },
             { title: "a fakeaway night kit", cost: 10, icon: "fa-fire-burner", color: "red", tag: "Fakeaway", desc: "Chicken thighs, basmati rice, coconut milk, peppers, and spices. Better than Deliveroo and a fraction of the cost." },
             { title: "a healthy snack drawer for the week", cost: 11, icon: "fa-cookie-bite", color: "teal", tag: "Smart Snacks", desc: "Mixed nuts, dark chocolate, rice cakes, cottage cheese, and fruit. Nothing processed in sight." },
@@ -283,14 +283,14 @@
 
         const FITNESS_ITEMS = [
             { title: "a full resistance bands set", cost: 12, icon: "fa-dumbbell", color: "blue", tag: "Home Training", desc: "Light, medium, and heavy bands. Train at home, on holiday, or anywhere — no gym needed." },
-            { title: "a quality foam roller", cost: 18, icon: "fa-circle", color: "indigo", tag: "Recovery", desc: "Recover properly between sessions. Most people skip this and wonder why they're always sore." },
+            { title: "a quality foam roller", cost: 18, icon: "fa-circle", color: "slate", tag: "Recovery", desc: "Recover properly between sessions. Most people skip this and wonder why they're always sore." },
             { title: "a proper insulated water bottle", cost: 25, icon: "fa-bottle-water", color: "cyan", tag: "Hydration", desc: "Keeps drinks cold all day. If you're not hitting your water intake, this is the fix." },
             { title: "a jump rope", cost: 10, icon: "fa-person-running", color: "orange", tag: "Cardio", desc: "Ten minutes skipping burns more than thirty on a treadmill. Fits in your bag, costs nothing to run." },
             { title: "a meal prep container set", cost: 15, icon: "fa-box-archive", color: "teal", tag: "Meal Prep", desc: "The boring buy that makes everything else easier. Batch cook Sunday, eat well all week." },
             { title: "a yoga and mobility mat", cost: 20, icon: "fa-person", color: "purple", tag: "Mobility", desc: "Stretching and mobility work is the most skipped part of most routines. This removes the excuse." },
             { title: "a kitchen scale", cost: 12, icon: "fa-scale-balanced", color: "slate", tag: "Nutrition Tool", desc: "Knowing exactly what you're eating changes everything. The most underrated tool in any health journey." },
             { title: "a set of gym gloves", cost: 10, icon: "fa-hand", color: "gray", tag: "Gym Kit", desc: "Protect your grip and push harder for longer. A small buy that improves every single session." },
-            { title: "a new gym bag", cost: 25, icon: "fa-bag-shopping", color: "indigo", tag: "Gym Kit", desc: "Turn up organised. Having the right bag means you never have an excuse to skip a session." },
+            { title: "a new gym bag", cost: 25, icon: "fa-bag-shopping", color: "slate", tag: "Gym Kit", desc: "Turn up organised. Having the right bag means you never have an excuse to skip a session." },
             { title: "a massage ball", cost: 8, icon: "fa-circle-dot", color: "red", tag: "Recovery", desc: "Target tight spots that a foam roller can't reach. Five minutes a day makes a real difference." },
             { title: "a NutriBullet blender", cost: 30, icon: "fa-blender", color: "green", tag: "Kitchen Tool", desc: "Protein shakes, smoothies, and soups in 60 seconds. Makes hitting your nutrition targets effortless." },
             { title: "a new set of gym leggings or shorts", cost: 22, icon: "fa-shirt", color: "purple", tag: "Gym Kit", desc: "You show up differently when you feel good in what you're wearing. It sounds simple because it is." },
@@ -298,7 +298,7 @@
 
         const TREAT_ITEMS = [
             { title: "a spa afternoon", cost: 35, icon: "fa-spa", color: "pink", tag: "Self Care", desc: "Proper recovery isn't just training. Stress management is part of the process — and you deserve it." },
-            { title: "a cinema trip for two", cost: 22, icon: "fa-film", color: "indigo", tag: "Experience", desc: "A proper evening out without it costing a fortune. Enjoy it completely guilt-free." },
+            { title: "a cinema trip for two", cost: 22, icon: "fa-film", color: "slate", tag: "Experience", desc: "A proper evening out without it costing a fortune. Enjoy it completely guilt-free." },
             { title: "a new health or mindset book", cost: 15, icon: "fa-book", color: "amber", tag: "Self Development", desc: "Invest in your knowledge and everything else gets easier. One book can genuinely change how you think." },
             { title: "a new gym outfit", cost: 40, icon: "fa-shirt", color: "purple", tag: "Gym Kit", desc: "You show up differently when you feel good in what you're wearing. You've earned it." },
             { title: "a family day trip", cost: 30, icon: "fa-map-location-dot", color: "green", tag: "Experience", desc: "Somewhere new, fresh air, and real memories. The best investment is time with people you love." },
@@ -487,10 +487,10 @@
             const phrase = phrases[Math.floor(seededRandom(seed + 99) * phrases.length)];
 
             projContainer.innerHTML = `
-                <div class="bg-indigo-50 rounded-2xl p-5 text-center border border-indigo-100 fade-in-up" style="animation-delay: 0.5s">
-                    <p class="text-sm text-indigo-500 font-medium">Over 12 months, that's</p>
-                    <p class="text-4xl font-black text-indigo-800 mt-1">£${annual.toLocaleString()}</p>
-                    <p class="text-sm text-indigo-600 font-semibold mt-2">${phrase}</p>
+                <div class="bg-red-50 rounded-2xl p-5 text-center border border-red-100 fade-in-up" style="animation-delay: 0.5s">
+                    <p class="text-sm text-red-700 font-medium">Over 12 months, that's</p>
+                    <p class="text-4xl font-black text-red-900 mt-1">£${annual.toLocaleString()}</p>
+                    <p class="text-sm text-red-800 font-semibold mt-2">${phrase}</p>
                 </div>
             `;
         }
@@ -504,7 +504,7 @@
                         <div class="absolute right-0 top-0 bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-bl-lg">
                             Save £${Math.round(action.save)}
                         </div>
-                        <h4 class="font-bold text-gray-800 mt-2"><i class="fas fa-arrow-right text-indigo-500 mr-2"></i>${action.title}</h4>
+                        <h4 class="font-bold text-gray-800 mt-2"><i class="fas fa-arrow-right text-red-700 mr-2"></i>${action.title}</h4>
                         <p class="text-sm text-gray-600 mt-1">${action.desc}</p>
                     </div>
                 `;
