@@ -52,8 +52,26 @@
         </div>
 
         <div class="flex-1 overflow-y-auto p-6 pb-24" id="main-content">
-            
-            <p class="text-gray-800 font-bold text-sm mb-6 text-center">Enter your estimated monthly spend in £. Leave blank if not applicable. Think hard. A rough idea is fine</p>
+
+            <div class="flex gap-3 mb-4">
+                <button id="btn-weekly" onclick="togglePeriod('weekly')" class="flex-1 bg-gray-100 border-2 border-transparent rounded-2xl p-4 text-center transition-all duration-200">
+                    <div class="text-xl mb-1">📅</div>
+                    <div id="btn-weekly-label" class="font-bold text-gray-700 text-sm">Weekly</div>
+                    <div id="btn-weekly-sub" class="text-xs text-gray-400 mt-1">I know my weekly spend</div>
+                </button>
+                <button id="btn-monthly" onclick="togglePeriod('monthly')" class="flex-1 bg-indigo-600 border-2 border-indigo-600 rounded-2xl p-4 text-center transition-all duration-200">
+                    <div class="text-xl mb-1">📆</div>
+                    <div id="btn-monthly-label" class="font-bold text-white text-sm">Monthly</div>
+                    <div id="btn-monthly-sub" class="text-xs text-indigo-200 mt-1">I know my monthly spend</div>
+                </button>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 flex items-start gap-3">
+                <i class="fas fa-mobile-screen text-blue-400 mt-0.5 flex-shrink-0"></i>
+                <p class="text-xs text-blue-700 leading-relaxed">Not sure what you spend? Open your mobile banking app and check last month. It takes 30 seconds and makes your results far more accurate.</p>
+            </div>
+
+            <p id="period-label" class="text-gray-800 font-bold text-sm mb-6 text-center">Enter your estimated <strong>monthly</strong> spend in £. Leave blank if not applicable. Think hard. A rough idea is fine</p>
 
             <form id="expense-form" class="space-y-4">
                 
@@ -162,10 +180,17 @@
             </div>
 
             <div class="flex-1 overflow-y-auto p-5 -mt-4 bg-gray-50">
+                <div id="reality-check" class="mb-4"></div>
                 <div id="results-cards" class="space-y-3 mb-4"></div>
                 <div id="annual-projection" class="mb-6"></div>
                 <h3 class="text-gray-800 font-bold mb-4 text-base border-t pt-5">How you unlock this</h3>
-                <div id="action-cards" class="space-y-4 pb-12"></div>
+                <div id="action-cards" class="space-y-4 mb-6"></div>
+                <div class="text-center bg-gray-50 py-3 rounded-xl">
+                    <p class="text-xs text-gray-400 leading-relaxed"><i class="fas fa-camera mr-1"></i> Screenshot this and save it — come back to it next time you're tempted to order a takeaway.</p>
+                </div>
+                <div class="text-center py-5 border-t border-gray-100 mt-4">
+                    <p class="text-xs font-bold tracking-widest uppercase text-gray-300">ZA Training</p>
+                </div>
             </div>
         </div>
     </div>
@@ -174,8 +199,24 @@
         // ==========================================
         // SECURITY PIN SETTING
         // Change this number whenever you want to lock out old clients!
-        const CURRENT_MONTH_PIN = "7777"; 
+        const CURRENT_MONTH_PIN = "7777";
         // ==========================================
+
+        let isWeekly = false;
+
+        function togglePeriod(type) {
+            isWeekly = (type === 'weekly');
+            const activeBtn   = 'flex-1 bg-indigo-600 border-2 border-indigo-600 rounded-2xl p-4 text-center transition-all duration-200';
+            const inactiveBtn = 'flex-1 bg-gray-100 border-2 border-transparent rounded-2xl p-4 text-center transition-all duration-200';
+            document.getElementById('btn-weekly').className  = isWeekly ? activeBtn : inactiveBtn;
+            document.getElementById('btn-monthly').className = isWeekly ? inactiveBtn : activeBtn;
+            document.getElementById('btn-weekly-label').className  = isWeekly ? 'font-bold text-white text-sm'    : 'font-bold text-gray-700 text-sm';
+            document.getElementById('btn-weekly-sub').className    = isWeekly ? 'text-xs text-indigo-200 mt-1'    : 'text-xs text-gray-400 mt-1';
+            document.getElementById('btn-monthly-label').className = isWeekly ? 'font-bold text-gray-700 text-sm' : 'font-bold text-white text-sm';
+            document.getElementById('btn-monthly-sub').className   = isWeekly ? 'text-xs text-gray-400 mt-1'      : 'text-xs text-indigo-200 mt-1';
+            const period = isWeekly ? 'weekly' : 'monthly';
+            document.getElementById('period-label').innerHTML = `Enter your estimated <strong>${period}</strong> spend in £. Leave blank if not applicable. Think hard. A rough idea is fine`;
+        }
 
         function checkPin() {
             const enteredPin = document.getElementById('pin-input').value;
@@ -285,11 +326,12 @@
         }
 
         function calculateSavings() {
-            const takeaways = parseFloat(document.getElementById('takeaways').value) || 0;
-            const lunches = parseFloat(document.getElementById('lunches').value) || 0;
-            const coffees = parseFloat(document.getElementById('coffees').value) || 0;
-            const supps = parseFloat(document.getElementById('supps').value) || 0;
-            const junk = parseFloat(document.getElementById('junk').value) || 0;
+            const multiplier = isWeekly ? 4.3 : 1;
+            const takeaways = (parseFloat(document.getElementById('takeaways').value) || 0) * multiplier;
+            const lunches   = (parseFloat(document.getElementById('lunches').value)   || 0) * multiplier;
+            const coffees   = (parseFloat(document.getElementById('coffees').value)   || 0) * multiplier;
+            const supps     = (parseFloat(document.getElementById('supps').value)     || 0) * multiplier;
+            const junk      = (parseFloat(document.getElementById('junk').value)      || 0) * multiplier;
 
             const totalInput = takeaways + lunches + coffees + supps + junk;
             let totalSavings = 0;
@@ -337,6 +379,7 @@
             totalSavedEl.classList.add('pop-in');
 
             newSeed();
+            renderRealityCheck(totalInput);
             renderResultCards(totalSavings);
             renderActionCards(actions);
 
@@ -345,6 +388,18 @@
             setTimeout(() => {
                 resultsView.classList.remove('translate-x-full');
             }, 10);
+        }
+
+        function renderRealityCheck(totalInput) {
+            const container = document.getElementById('reality-check');
+            const period = isWeekly ? 'week' : 'month';
+            container.innerHTML = `
+                <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center fade-in-up">
+                    <p class="text-sm text-red-400 font-medium">You're currently spending</p>
+                    <p class="text-4xl font-black text-red-600 mt-1">£${Math.round(totalInput)}</p>
+                    <p class="text-sm text-red-400 font-medium mt-1">every ${period} on things that aren't serving you.</p>
+                </div>
+            `;
         }
 
         function renderResultCards(savingsAmt) {
@@ -453,6 +508,7 @@
             resultsView.classList.add('translate-x-full');
             setTimeout(() => {
                 resultsView.classList.add('hidden');
+                document.getElementById('reality-check').innerHTML = '';
                 document.getElementById('results-cards').innerHTML = '';
                 document.getElementById('annual-projection').innerHTML = '';
             }, 300);
