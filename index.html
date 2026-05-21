@@ -392,12 +392,11 @@
 
         function renderRealityCheck(totalInput) {
             const container = document.getElementById('reality-check');
-            const period = isWeekly ? 'week' : 'month';
             container.innerHTML = `
                 <div class="bg-red-50 border border-red-100 rounded-2xl p-4 text-center fade-in-up">
                     <p class="text-sm text-red-400 font-medium">You're currently spending</p>
                     <p class="text-4xl font-black text-red-600 mt-1">£${Math.round(totalInput)}</p>
-                    <p class="text-sm text-red-400 font-medium mt-1">every ${period} on things that aren't serving you.</p>
+                    <p class="text-sm text-red-400 font-medium mt-1">every month on things that aren't serving you.</p>
                 </div>
             `;
         }
